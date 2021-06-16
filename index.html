@@ -63,7 +63,15 @@
         <pre>   ssh-keygen -t rsa -C "邮箱地址" // 获取秘钥</pre>
         <pre>   需要关联远程仓库才能进行操作</pre>
         <pre>   git remote add origin 仓库地址</pre>
-        <pre>   git push origin // 把文件推入仓库</pre>
+        <pre>   git push origin 分支 // 把文件推入仓库</pre>
+        <pre>   但是这里会出问题 第一次上传会被拒绝访问</pre>
+        <pre>   原因是 上传文件之后会把创建仓库时自带的文件覆盖了</pre>
+        <pre>   解决办法：把那个文件先拉到本地 再一起上传！</pre>
+        <pre>   git pull origin 分支</pre>
+        <pre>   这时候又有问题了 也被拒绝了！原因是 之前没有访问过，所以不给你拿！</pre>
+        <pre>   这就很蛋疼 就像第一次找工作需要工作经验一样 没工作哪来的经验！</pre>
+        <pre>   解决办法： 活用百度！git 指令系统很庞大 非专业人士不可能去研究这么深入 我们也只是用一下常用的那些指令！</pre>
+        <pre>   git pull origin 分支 --allow-unrelated-histories // 解除访问限制</pre>
     </nav>
 
     <nav id="right">
