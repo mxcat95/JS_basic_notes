@@ -26,9 +26,9 @@ h1{
 }
 
 #皮一下{
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow: auto;
+    /* text-overflow: ellipsis;
+    white-space: nowrap; */
     color: gold;
     font-size: 30px;
 }
