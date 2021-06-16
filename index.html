@@ -12,8 +12,14 @@
 <body>
 
     <main>
-        <h1>唄吧你个隆叮咚啊！</h1>
-        <h1>XDB才是最帅的！</h1>
+        <!-- 墨宝的修改 -->
+        <h1>墨宝才是第一美少女！</h1>
+
+        <!-- XDB的修改 两者产生冲突 需要放弃一个版本 -->
+        <!-- 墨宝好看 就采用墨宝的版本吧！ -->
+
+        <!-- <h1>唄吧你个隆叮咚啊！</h1> -->
+        <!-- <h1>XDB才是最帅的！</h1> -->
 
         <div id="皮一下">
             <p>
@@ -89,6 +95,12 @@
         <pre>   git merge b分支 // 把b分支合并到a</pre>
         <pre>   而且各分支的提交记录也互不干扰！</pre>
         <pre>   git branch -d 分支名 // 删除分支</pre>
+        <pre>   git tag v1.01 // 创建分支版本号 可替代很长的hash值</pre>
+        <pre>   git tag v1.00 某个版本hash值// 给指定版本添加版本号</pre>
+        <pre>   git show 创建的版本号 // 查看指定版本的diff信息</pre>
+        <pre>   git tag -a 版本号 -m "日志描述信息" 日志hash值 // 为某个版本日志增加描述信息</pre>
+        <pre>   git tag -d 版本号 // 删除某个版本</pre>
+        <pre>   git log --graph // 让log 信息更美观一点</pre>
     </nav>
 
 
@@ -115,6 +127,11 @@
         }
 
         console.log(`XDB到此一游！`);
+      
+        function showSomething(str) {
+            console.log(str)
+        }
+        showSomething(`墨杉是个大坏蛋！`)
     </script>
 </body>
 
