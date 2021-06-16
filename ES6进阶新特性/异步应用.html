@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>异步应用</title>
+</head>
+
+<body>
+    <script>
+        /* 
+            异步基本概念
+            Thunk函数
+            Promise对象
+        */
+
+        /* 
+            异步：
+                即不连续的执行任务
+            同步：
+                连续执行任务
+            理解：
+                异步：
+                    一群人爬山 中途有人想上厕所
+                    他先去厕所 然后剩下的人继续走（不中断）
+                    等他回来追上队伍继续一起走
+                同步：
+                    一群人爬山 中途有人想上厕所
+                    她去厕所 一群人原地等着她回来（中断）
+                    然后再一起走
+        */
+
+        /* 
+            回调函数callback
+                JavaScript对异步编程的实现
+                把任务的第二段单独写在一个函数里面
+                等重新执行这个任务的时候
+                就直接调用这个函数
+        */
+
+        function add(x, y, callback) {
+            let sum = x + y
+            return callback(sum) // 异步回调 等到add计算完sum才会执行
+        }
+
+        function squa(num) {
+            return num ** 2
+        }
+
+        add(1, 2, squa) // 9
+
+        /*  
+            传统编程语言(C Java等) 已经有异步编程的解决方法 其中一种叫做"协程 coroutine "
+            意思是 多线程写作完成异步任务
+
+            大致流程：
+                线程A执行一段时间(10ms 人眼感觉不到停顿)
+                线程A暂停 线程B执行一段时间
+                线程B暂停 线程A再来一段时间
+                ...以此类推 交替进行
+        */
+
+        // 模拟两个音乐播放器同时播放音乐
+
+        function* player(song) {
+            while (true) {
+                yield kuG(song)
+                yield wangYi(song)
+            }
+        }
+
+        function kuG(song) {
+            return `现在是酷狗播放${song}！`
+        }
+
+        function wangYi(song) {
+            return `现在是网易播放${song}！`
+        }
+
+        let pl = player('《嚣张》')
+
+        let timer = setInterval(() => {
+            console.log(pl.next().value)
+            // tongbu()
+        }, 10)
+        // 切换间隙很快的时候 看起来就好像是同步运行的
+
+        setTimeout(() => {
+            clearInterval(timer)
+            timer = null
+            console.log('播放结束！')
+        }, 100)
+
+        // 这就是同步播放的 不可能的
+        // 比如两个播放器请求同一首歌的播放源 不可能同时得到回应 肯定有先后顺序的
+        function tongbu(song) {
+            console.log(kuG(song))
+            console.log(wangYi(song))
+        }
+
+        /* 
+            Generator函数可以暂停执行和恢复执行
+            这是其封装异步任务的根本原因
+            除此之外 还有两个特性
+                函数体内外的数据交换：
+                    next方法 返回值的value属性
+                    向外部输出数据
+                    next(data) 向内部传入数据
+                错误处理机制：
+                    throw方法抛出的异常 可以被其内部的
+                    try...catch捕获
+                    这意味着 错误代码和处理代码可以分隔
+                    时间(非同步执行)和空间(非同一个代码块执行)的分隔
+        */
+
+        // 生成器函数的异步实现
+        // var fetch = require('node-fetch')
+
+        // function* gen() {
+        //     var url = 'https://api.github.com/users/github'
+        //     var result = yield fetch(url)
+        //     console.log(result.bio)
+        // }
+        // var g = gen()
+        // var result = g.next()
+
+        // result.value.then(data => data.json()).then(data => g.next(data))
+
+        /* 
+            Thunk 函数 
+               一个临时函数
+            两个概念：
+                函数的传值调用
+                    先传值 再调用
+                函数的传名调用
+                    先调用 再传值
+            编译器的"传名调用"：
+                将参数放到一个临时函数之中
+                再将其传入函数体内
+                这个临时函数即为Thunk函数 
+            JavaScript中的Thunk函数 是将多参数函数
+            替换成单参数函数的版本 类似于函数的柯理化
+        */
+
+        var x = 1
+
+        function f(m) {
+            return m * 2
+        }
+
+        f(x + 5) // JavaScript使用传值调用方式
+        // 实际上是 f(6) => return 6 * 2
+
+        // 传名调用是这样的
+        // f(x+5) => return (x+5) * 2 = (1 + 5) * 2
+
+        // thunk函数的作用
+        var thunk = function () {
+            return x + 5
+        }
+
+        function fp(thunk) {
+            return thunk() * 2 // 只有调用时才去取x的值
+        }
+
+        function add2(x, y, z) {
+            return x + y + z
+        }
+        // 正常版本调用
+        console.log(add2(1, 2, 3))
+
+        // Thunk函数版本 闭包实现
+        var Thunk = function (x) {
+            return function (y) {
+                return function (z) {
+                    return add2(x, y, z)
+                }
+            }
+        }
+        var tk = Thunk(1)(2) // 保留了两个固定参数
+        // 下次调用就不用再重复 直接传入可变参数即可
+        console.log(tk(5)) // 8
+
+        // 任何函数 只要参数有回调函数 就可以写成Thunk形式 使用柯理化的方式
+        // ES5版本
+
+        const ThunkEs5 = function (fn) {
+            return function () {
+                // 把所有参数存入数组
+                var args = Array.prototype.slice.call(arguments)
+                return function (callback) {
+                    // 将回调函数参数存入到参数数组里
+                    args.push(callback)
+                    console.log(this)
+                    // window对象执行该函数
+                    return fn.apply(this, args)
+                }
+            }
+        }
+
+        function la(x, callback) {
+            return x + callback(x)
+        }
+
+        function log(x) {
+            return x ** 2
+        }
+        var lala = ThunkEs5(la)
+        console.log(lala(3)(log)) // 3 + 3*3 = 12
+
+        // ES6版本 就是闭包的应用
+
+        const ThunkEs6 = function (fn) {
+            return function (...args) {
+                return function (callback) {
+                    return fn.call(this, ...args, callback)
+                }
+            }
+        }
+
+        /*  
+            Promise对象
+                异步编程的一种解决方案
+                比传统的回调函数和事件处理更合理 更强大
+
+                可以简单理解为一个容器
+                里面存着某个未来才会结束的事件
+
+                即获取异步操作的的消息
+
+                它提供统一的API 来处理异步操作
+        */
+
+        /*
+             基本用法：
+                接收一个函数fn(resolve,reject)
+                fn的两个参数也是函数 不需要自己部署
+
+                resolve:
+                    改变promise对象的状态 "成功"
+                    在异步操作成功时调用
+                    将异步操作的结果作为参数传递出去
+                reject：
+                    改变状态为 "失败"
+                    在异步操作失败时调用
+                    将异步操作的错误作为参数传递出去
+            then方法：
+                也可以接收两个回调函数作为参数
+                分别是promise对象状态变为成功和
+                失败的时候调用
+                第二个参数可选 不一定需要
+        */
+
+        const promise = new Promise((resolve, reject) => {
+            // ...some code
+
+            /* 异步操作结束 得到异步操作结果 */
+            if ('操作成功了') resolve(value)
+
+            // 失败则返回失败状态
+            reject(error)
+        })
+
+        promise.then(value => '成功了', error => '失败了')
+
+        /* 
+            Promise对象的特点
+                1.其状态不受外界影响
+                    pending：进行中
+                    fulfilled：已成功
+                    rejected：已失败
+                    只会通过resolve和reject函数判断状态
+                2.一旦状态改变 就不会再变 任何时候都是这个结果      
+        */
+
+        // 简单案例
+
+        // 1
+        function timeout(ms) {
+            return new Promise((resolve, reject) => {
+                setTimeout(resolve, ms, 'done')
+                // done 会作为内部函数参数执行的参数
+            })
+        }
+
+        timeout(100).then(value => console.log(value)) // done
+
+        // 2
+        let promise1 = new Promise((resolve, reject) => {
+            console.log('Promise')
+            resolve()
+        })
+
+        promise1.then(() => console.log('resolved'))
+
+        console.log('Hi!')
+
+        // 3
+        let body = document.querySelector('body')
+
+        // 异步图片加载
+        function loadImageAsync(url) {
+            return new Promise((resolve, reject) => {
+                const image = new Image()
+
+                image.onload = function () {
+                    resolve(image)
+                }
+
+                image.onerror = function () {
+                    reject(new Error("从当前路径无法获取图片 " + url))
+                }
+
+                image.src = url
+                console.log(image.src)
+            })
+        }
+
+        let img = loadImageAsync('../images/1.jpg')
+        img.then((result) => {
+            console.log('图片加载成功')
+            body.appendChild(result)
+        })
+
+        // Promise对象的嵌套
+        const p1 = new Promise((resolve, reject) => {
+            console.log('p1激活！')
+
+            // 图片对象
+            const image = new Image()
+
+            // image.onload = function () {
+            //     console.log('图片加载成功')
+            // }
+
+            image.src = '../images/3.jpg'
+
+            setTimeout(() => {
+
+                console.log('p1运行结束！状态已改变！')
+
+                // 成功 则返回图片信息
+                resolve(image)
+                console.log('新图片加载成功！')
+
+                // 失败 则返回失败信息
+                reject(new Error('出错了，p1状态为失败！'))
+            }, 5000)
+        })
+
+        const p2 = new Promise((resolve, reject) => {
+            console.log('p1激活！')
+
+            setTimeout(() => {
+                // 根据p1的状态决定p1的执行结果
+                resolve(p1)
+
+                console.log('p1正在运行中...请等待4秒！');
+            }, 1000);
+        })
+
+        p2.then(result => {
+
+            // 若p1状态成功了 则进入此处 加载图片到页面
+            console.log('p1状态为\'成功加载图片\'!')
+            console.log(result)
+
+            body.appendChild(result)
+
+        }, err => {
+
+            // 若p1状态失败 则进入此处 抛出错误信息
+            console.log('p1状态为\'加载图片失败\'！')
+            console.log(err)
+
+        })
+
+        // p2的resolve方法 将p1作为参数 返回另一个异步操作
+        // p1的状态会传给p2 如果p1的状态改变了 p2的回调函数会立即执行
+    </script>
+</body>
+
+</html>

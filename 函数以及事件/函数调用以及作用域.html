@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>函数调用以及作用域</title>
+</head>
+<body>
+
+
+<script>
+
+    let 子龙 = function () {
+        return 5
+    }
+    let a = 1
+        /* 立即执行函数 */
+
+    ;(x => {
+        return x
+    })(5)
+    console.log(a)
+
+    /*
+        作用域：成员变量或者成员方法生效的区域
+            分类：
+                全局: 作用于整个窗口页面，本质就是全局对象的属性
+                局部: 仅仅作用于某一部分区域
+
+        函数作用域：
+            局部作用域
+            在函数内部声明的变量 仅作用于函数内部 而不能被外部访问
+
+        函数参数的多种方式：
+            标准传参：
+                本质就是将函数外部的变量复制给函数内部的参数
+                注意事项：
+                    传参是基本数据类型，函数内部的值不会影响函数外部的值
+                    传参是引用数据类型，内函数内部的操作部会影响外部的值
+                    (涉及到一个浅拷贝和深拷贝的问题)
+            arguments传参:
+                ECMAScript规范：对于函数参数，没有数量、数据类型的限制
+                    原因：js中传入的参数是由一个数组来保存的，函数接收到的始终是一个数组，而不关心数组里有什么东西
+
+    */
+
+    var b = 1 // 将b变量添加为当前window对象下面的一个属性 全局通用 全局变量
+    console.log(b === window.b)
+
+    function foo() {
+        // 声明一个函数内部变量
+        var c = 1
+        console.log(b,c)
+    }
+    foo()
+    // 报错 无法从外部访问函数内部的变量
+    // console.log(b,c)
+
+    let x = 10,y = 20
+
+
+    function add(...args) {
+
+        // 打印参数信息
+        // 判断参数属性是否存在
+        // for (let i in arguments) if (arguments.hasOwnProperty(i)) console.log(arguments[i])
+
+        // for of方式可以避免上述可能问题
+        for (const argument  of arguments) {
+            console.log(argument)
+        }
+    }
+    add(x,y,23,33)
+</script>
+</body>
+</html>
+

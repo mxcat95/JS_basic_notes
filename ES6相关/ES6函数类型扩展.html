@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<!--suppress ALL -->
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>函数类型扩展</title>
+    <script src="../js封装/pushAll.js"></script>
+</head>
+
+<body>
+
+<button id="press">单击</button>
+<script>
+    var {
+        log
+    } = console
+
+    /* 函数参数设置 */
+
+    // ES6之前的默认参数的设置问题
+    function lg(x, y) {
+        y = y || '世界' // 如果y没有传参，则设为默认值 '世界'
+        log(x, y)
+    }
+
+    lg('你好') // 你好 世界
+    lg('你好', '墨宝') // 你好 墨宝
+    lg('你好', '') // 你好 世界 因为传入的参数是false,所以还是返回默认值
+    log('\n')
+
+    // 修改
+    function lgp(x, y) {
+        if (typeof y === 'undefined') {
+            y = '世界'
+        }
+        log(x, y)
+    }
+
+    lgp('你好') // 你好 世界
+    lgp('你好', '墨宝') // 你好 墨宝
+    lgp('你好', '') // 你好
+
+    log('\n')
+    // 这种方式比较麻烦 如果参数比较多 需要频繁判断参数类型，使得代码臃肿
+
+    // ES6里面 定义了新的设置方式 直接赋值 利于阅读和代码优化 也不影响源码运行
+
+    function es6(x, y = '欢迎光临！') {
+        log(x, y)
+    }
+
+    es6('你好') // 你好 欢迎光临
+    es6('你好', '墨宝') // 你好 墨宝
+    es6('你好', '') // 你好
+
+    // 注意事项 默认参数已经声明 不能用let const再次声明 且不能使用同名参数
+
+    // 函数的length属性 返回没有指定默认参数的参数个数
+
+    log((function foo(x) {
+    }).length) // 1
+    log((function foo(x, y = 0) {
+    }).length) // 1
+    log((function foo(x, y = 0, z) {
+    }).length) // 1 忽略默认值之后的参数
+
+    // 默认参数的作用域
+    var x = 1
+
+    // 参数会形成一个单独的作用域 与全局作用域无关 初始化结束 该作用域消失
+    function fn(x, y = x) {
+        log(y)
+    }
+
+    fn(x) // 1
+    fn(2) // 2
+
+    // 没有声明形参的时候 指向全局变量
+    function fm(y = x) {
+        let x = 2
+        log(y)
+    }
+
+    fm() // 1
+
+    /* rest参数设置 剩余参数 */
+
+    // 可自由传入多个参数
+    function rest(x, y, ...others) {
+        log(x)
+        log(y)
+        log(others) // 返回剩余参数组成的一个数组 继承数组的所有方法
+    }
+
+    rest(1, 2, 3, 4, 5, 6) // 1 2 [3,4,5,6]
+
+    // rest封装的push方法
+    let a = []
+    pushAll(a, 1, 2, 3)
+    log(a) // [1,2,3]
+
+    /* 严格模式 */
+    // 函数内部可以使用严格模式
+    // ES6中规定 函数参数使用了默认值 解构赋值 扩展运算符等 就不能显式设置严格模式
+
+    function strict(param) {
+        'use strict' // 严格模式
+        // code
+    }
+
+    function f(param = 0) {
+        // 'use strict' // 报错 参数先于函数体执行 但是参数是否以严格模式执行需要看函数体
+        // 矛盾
+        // code
+    }
+
+    // 函数名 name
+    function fname() {
+        log(fname.name) // fname
+    }
+
+    fname()
+
+    // 匿名函数
+    let fan = function () {
+        log(fan.name) // fan
+    }
+    fan()
+
+    let fam = function next() {
+        log(fam.name) // next 既然使用函数表达式 声明就没意义了
+    }
+    fam()
+
+    /* 箭头函数(最重要更新) */
+
+    // 多个参数
+    ;
+    ((x, y) => {
+        log(x, y)
+        log(x + y)
+    })(1, 2)
+
+    // 只有一个参数，一句代码时
+    ;
+    (x => log(x))(5)
+
+    // 无参数时
+    ;
+    (() => log('你好！'))()
+
+    // 返回对象时，需要用小括号括起来 防止被解析为代码块
+    ;
+    (() => ({
+        x: 1,
+        y: 2
+    }))()
+
+    // 与变量解构结合
+    const full = ({
+                      first,
+                      last
+                  }) => first + '' + last
+
+        // 与rest结合
+    ;
+    ((...nums) => nums)(2, 3, 4)
+
+    // 简化回调函数
+    ;
+    [1, 2, 3].map(x => x * x)
+
+    /* 关键点 */
+    // this对象 定义对象而非使用对象 也就是说 箭头函数没有自己的this指向
+    ft = () => log(this.x)
+    var x = 9527
+    let o = {
+        x: 1,
+        y: 2
+    }
+    ft() // 9527
+    ft.call(o) // 9527 仍然指向window对象
+
+    var str = 'window'
+    const obj = {
+        str: 'obj',
+        fn: () => {
+            log(this.str)
+        },
+        fn2: function () {
+            log(this.str, '当前词法组作用域中的this')
+            return {
+                str: 'newObj',
+                fn: () => {
+                    log(this.str)
+                }
+            }
+        }
+    }
+
+    obj.newFn = () => {
+        log(this.str)
+    }
+    obj.fn() // window 指向全局
+    obj.newFn() // window 指向全局
+    obj.fn2().fn() // obj 指向创建时所定义的对象 也就是obj 类似于闭包
+
+    /**
+     *  普通函数的this指向调用对象 没有则指向undefined或者window
+     *  一般指向window 严格模式下才会指向undefined
+     *  箭头函数的this指向于创建它的对象
+     *  实际上箭头函数根本没有this指向 所以不能用作构造函数
+     *  也不能使用arguments对象 可以用rest参数代替
+     */
+
+    var aa = 11 // 全局变量
+    function Class() {
+        this.aa = 22
+        let b = function () {
+            log(this.aa) // 没有被对象调用 所以指向window
+        }
+        b() // 11
+        let c = () => {
+            log(this.aa) // 箭头函数是被Class创建的 所以指向Class对象
+        }
+        c() // 22
+    }
+
+    var xx = new Class()
+
+    function f1() {
+        setTimeout(() => {
+            console.log(this.id) // 理应指向window 输出33
+        }, 100)
+    }
+
+    var id = 33
+    f1() // 33
+
+    f1.call({id: 44}) // this指向此对象 输出44
+
+    let Ff = function () {
+        console.log('啦啦啦')
+    }
+    new Ff()
+
+    let Fff = () => {
+        console.log('哒哒哒')
+    }
+    // new Fff() // 报错 Fff is not a constructor
+
+    /* 箭头函数不适用的场合 */
+    // 创建对象方法时不使用箭头函数 会出现this指向混乱的情况
+    // 需要动态this的时候
+    var button = document.getElementById('press')
+    button.addEventListener('click', () => {
+        this.classList.toggle('on') // 点击报错
+    })
+
+    // 也不建议使用箭头函数嵌套 影响可读性
+    let insert = value => ({
+        into: array => ({
+            after: afterValue => {
+                array.splice(array.indexOf(afterValue) + 1, 0, value) // 在所查询的项后面添加项
+                return array
+            }
+        })
+    })
+    let oarr = [1, 3]
+    insert(2).into(oarr).after(1) // 在[1,3]中添加2 返回[1,2,3]
+</script>
+</body>
+
+</html>

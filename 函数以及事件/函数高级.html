@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="../js封装/柯理化封装.js"></script>
+    <title>函数高级</title>
+</head>
+
+<body>
+
+<button>按钮1</button>
+<button>按钮2</button>
+<button>按钮3</button>
+<button>按钮4</button>
+<button>按钮5</button>
+<script>
+    /* 递归函数 */
+    // 简而言之，就是自调用函数
+    // 这是一个死循环，所以必须有结束条件，以及调用表达式
+
+    // 递归累加器
+    // function accumulator(num) {
+    //     // 结束条件
+    //     if (num <= 1) {
+    //         return 1
+    //     } else {
+    //         return num + accumulator(num - 1) // 递归表达式
+    //     }
+    // }
+    // 乍一看 没有问题
+    // let cal = accumulator
+    // accumulator = null
+    // // 报错 因为cal的返回值还是调用了accumulator，此时它已经变成null了
+    // console.log(cal(5))
+
+    // 解决方案： arguments.callee 一个指针 指向当前正在执行的函数
+    function accumulator(num) {
+        // 结束条件
+        if (num <= 1) {
+            return 1
+        } else {
+            console.log(arguments)
+            return num + arguments.callee(num - 1) // 递归表达式 指针回调
+        }
+    }
+
+    let cal = accumulator
+    accumulator = null // 取消函数功能
+    console.log(cal(5)) // 不会报错 使用arguments.callee比使用函数名调用更保险
+
+    // 严格模式 头部添加 'use strict' 作用： 声明严格模式下不允许脚本访问arguments.callee属性
+    function caculate(n) {
+        'use strict'  // 严格模式
+        if (n <= 1) {
+            return 1
+        } else return n + arguments.callee(n - 1)
+    }
+
+    let ca = caculate
+    caculate = null
+    // console.log(ca(5)) // 报错 因为是严格模式
+
+    // 解决办法 命名表达式
+    let c = (function f(n) {
+        'use strict'  // 严格模式
+        if (n <= 1) {
+            return 1
+        } else return n + f(n - 1)
+    })
+    let c2 = c
+    c = null
+    console.log(c2(5)) // 正常运行
+
+    // 递归函数的缺点 当计算数量过大的时候 性能消耗较大
+    // 因为除了第一个和最后一个，已经计算过的值会被计算两次 运算量翻倍
+    // 解决办法 带有记忆功能的递归函数
+
+    // 案例：计算阶乘
+    function factorial(n) {
+        var result = []  // 用于保存计算过的值
+        // 有限个正整数
+        if (isFinite(n) && n > 0 && n === Math.round(n)) {
+            // 已计算的值 直接返回
+            if (result[n - 1]) {
+                return result[n - 1]
+            }
+
+            // 结束条件
+            if (n <= 1) {
+                result[n - 1] = 1
+                return result[n - 1]
+            }
+
+            // 表达式
+            result[n - 1] = n * arguments.callee(n - 1)
+            return result[n - 1] // 返回最终结果
+        }
+    }
+
+    console.log(factorial(5))
+
+    // 修改版 利用函数自身的属性 将自身当做数组对待
+    function factorialPlus(n) {
+        // 有限个正整数
+        if (isFinite(n) && n > 0 && n === Math.round(n)) {
+            // 如果没有缓存结果
+            if (!((n - 1) in factorialPlus)) {
+                factorialPlus[n - 1] = n * arguments.callee(n - 1) // 计算结果并保存
+            }
+            return factorialPlus[n - 1]
+        }
+    }
+
+    factorialPlus[0] = 1 // 结束条件
+    console.log(factorialPlus(5))
+
+    /* 闭包与变量 */
+    // 闭包是什么？ 是一个有权限访问另一个函数作用域的函数或者对象
+    // 常见的创建方式 在函数内部创建另一个函数
+    function bi(propertyName) {
+        let pro = propertyName // bi函数内部的私有属性 只能通过bi函数访问
+        return {
+            add: function (a) {
+                return a + pro
+            },
+            value: pro
+        }
+    }
+
+    let res = bi(5) // 理论上，bi函数到此已经执行完毕 其作用域被销毁了 无法再访问了
+    console.log(res.add(6), `bi函数的pro的值为:`, res.value) // 通过其返回对象的调用还可以访问到原来的值
+    // 这是因为内部对象的方法作用域链中包含了bi函数的作用域
+
+    /* 经典案例 循环绑定 */
+    var btns = document.querySelectorAll('button')
+    // for (var i=0; i<5; i++) {
+    //         btns[i].onclick = function(){
+    //             console.log(i) // 必定打印5 因为var将i提升为全局变量了
+    //     }
+    // }
+
+    // 加入闭包之后
+    for (var i in btns) {
+        if (btns.hasOwnProperty(i)) {
+            btns[i].onclick = (function (n) {
+                return function () {
+                    console.log(n * 1 + 1) // 将字符串转化为数值
+                }
+            })(i)
+            // 立执行函数形成闭包，去保存每一个循环的i值
+        }
+    }
+    // 闭包问题： 内存泄露 占用多余的内从空间 带来不必要的内存消耗 慎用!
+
+    // 闭包的this指向
+    // 一个函数 全局运行 this指向window
+    // 作为对象的方法调用 则指向对象
+    // 匿名函数指向window
+    // 闭包呢，根据编写情况而定
+    var name = 'window' // 全局属性
+    var obj = {
+        name: 'myself',
+        showName: function () {
+            const that = this
+            return function () {
+                console.log(this.name) // 函数里，在外部执行就指向window
+                console.log(that.name) // 指向obj
+            }
+        }
+    }
+    var obj1 = {
+        name: 'myself',
+        showName: function () {
+            return {
+                name: this.name, // 指向obj1
+                showName: function () {
+                    console.log(this.name) // 指向返回的对象
+                }
+            }
+        }
+    }
+    obj.showName()() // 打印window myself
+    obj1.showName().showName() // 打印myself
+
+    /* 高阶函数 */
+    // 操作函数的函数 传入一个或多个函数 返回一个新函数
+    function not(fn) {
+        return function () {
+            return !fn.apply(this, arguments)
+        }
+    }
+
+    let even = function (x) {
+        return x % 2 === 0
+    }
+    let arr = [1, 3, 5, 7, 9]
+    console.log(arr.every(not(even))) // every函数操作not函数操作even函数返回的函数
+
+    // 等价于以下代码
+    console.log(arr.every((item, index, array) => {
+        return !item % 2 === 0
+    }))
+
+    // 带有记忆功能的高阶函数
+    function memorized(fn) {
+        var cache = {} // 将值保存在其中
+        console.log(cache)
+        return function () {
+            console.log(arguments)
+            var key = Array.prototype.join.call(arguments) // 实参转换为字符串
+            if (key in cache) {
+                return cache[key] // 存在直接调用
+            } else {
+                return cache[key] = fn.apply(this, arguments) // 把计算结果保存在cache里
+            }
+        }
+    }
+
+    // 阶乘算法
+    function fp(n) {
+        if (n <= 1) {
+            return 1
+        } else {
+            return n * memorized(fp)(n - 1)
+        }
+    }
+
+    console.log(memorized(fp)(5))
+
+    // 高阶函数的格式
+    function f(fn) {
+        return function () {
+            return fn.apply(this, arguments)
+        }
+    }
+
+    function f1(x) {
+        return x * x * x > 0
+    }
+
+    let brr = [-2, -1, 0, 1, 2]
+
+    console.log(brr.filter(f(f1)))
+
+    /* 函数柯理化 */
+    // 函数式编程的重要思想 高阶函数的一个重要应用
+    // 思想： 给函数分步传参 可多层嵌套 返回最终结果 充分利用闭包特性实现 闭包嵌套
+    // 原函数
+    function add(a, b, c) {
+        return a + b + c
+    }
+
+    // 拆分为
+    function addPlus(a) {
+        return function (b) {
+            return function (c) {
+                return a + b + c
+            }
+        }
+    }
+    console.log(addPlus(1)(2)(3)) // 打印6 <==> add(1,2,3)
+
+    /* 通用柯理化应用--普通函数 */
+    // 相当于把多元一次方程拆分为多个一元一次方程 从而实现不同的功能
+
+    // 正则检测函数 转换之后用于检测传入的字符串是否符合正则表达式
+    function checkFun(reg,str) {
+        return reg.test(str)
+    }
+
+    // 转化柯理化
+    const check = currying(checkFun)
+
+    // 产生新的功能函数
+    const checkPhone = check(/^1[34578]\d{9}$/)
+    const checkEmail = check(/^(\w)+(\.\w+)*@(\w)+((\.\w+)+)$/)
+
+    // 一个普通函数
+    function loc(a,b,c) {
+        console.log(a+b+c)
+    }
+    // 柯理化之后
+    let hasA = currying(loc,[10])
+    hasA(10)(10)
+
+    let hasAB = currying(loc,[10,10])
+    hasAB(10)
+</script>
+</body>
+
+</html>

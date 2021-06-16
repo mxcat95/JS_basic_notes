@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>浏览器事件&函数应用</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        .momo {
+            width: 600px;
+            height: 500px;
+            margin: 200px auto 0;
+            text-align: center;
+            border: 2px solid purple;
+        }
+
+        .momo span {
+            display: inline-block;
+            width: 160px;
+            height: 50px;
+            color: #fff;
+            font-size: 24px;
+            line-height: 50px;
+            text-align: center;
+            cursor: pointer;
+            background-color: rgb(10, 99, 134);
+        }
+
+        .momo span:not(.momo span:first-child) {
+            margin-left: 10px;
+        }
+
+        .box {
+            width: 200px;
+            height: 200px;
+            margin: 150px auto 0;
+            font-size: 20px;
+            color: #fff;
+            text-align: center;
+            line-height: 200px;
+            background-color: orange;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="momo">
+        <span>变红色</span>
+        <span>变蓝色</span>
+        <span>变紫色</span>
+        <div class="box">我现在是橘色</div>
+    </div>
+    <script>
+        // 面向对象
+        class ChangeColor {
+            constructor(doms, e, color) {
+                this.doms = doms
+                this.e = e
+                this.color = color
+                this.render(this.e, this.color)
+            }
+            render(e, color) {
+                for (let i in e)
+                    this.doms.span[i].addEventListener(e[i], () => {
+                        this.doms.box.style.cssText = `background-color: ${color[0][i]};`
+                        this.doms.box.innerText = `我变成了${color[1][i]}色!`
+                    })
+            }
+        }
+
+        // 获取要操作的元素集合
+        let doms = {
+            span: document.getElementsByTagName('span'),
+            box: document.querySelector('.box')
+        }
+
+        // 设置想改变的颜色
+        let colors = [
+            ['black', 'blue', 'purple', ],
+            ['黑', '蓝', '紫']
+        ]
+
+        // 设置想要操作的事件
+        let events = ['click', 'mouseenter', 'dblclick']
+
+        new ChangeColor(doms, events, colors)
+    </script>
+</body>
+
+</html>

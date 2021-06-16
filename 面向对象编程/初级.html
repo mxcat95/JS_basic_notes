@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>面向对象初级</title>
+</head>
+<body>
+<script>
+    /* 构造函数 */
+    // 通过new操作符来创建对象的函数
+    // 每个对象都拥有__proto__属性 私有属性 即原型属性 只能通过该对象访问其中属性
+
+    let arr = new Array(12)
+    console.log(arr.__proto__.constructor)
+
+    // 工厂模式创造对象
+    function createObject(name, age, company) {
+        let obj = {}
+        obj.name = name
+        obj.age = age
+        obj.company = company
+        obj.sayName = function () {
+            console.log(this.name)
+        }
+        return obj
+    }
+
+    let mo = createObject('莫墨', 16, '学校')
+    let mu = createObject('木杉', 25, 'IT') // 本质上还是字面量创建的实例对象，继承于Object对象
+
+    // 构造函数方式 缺点：每创建一个实例，就要重新创建一遍方法
+    function Person(name, age, company) {
+        // let o = new Object() 由Person创造对象
+        // let this = o 将this指向创建的对象
+        this.name = name
+        this.age = age
+        this.company = company
+        this.sayName = sayName
+        // this.sayName = function () {
+        //     console.log(this.name)
+        // }
+        // this.sayName = new Function(`console.log(this.name)`) 方法也可以等价于这种形式
+        // return o 返回实例化对象
+        // console.log(this) 直接运行构造函数的this指向为Window
+    }
+    // 创建一个全局函数，在构造函数里以函数指针的方式去引用
+    // 新问题：如果一个对象，需要创建很多方法，就需要定义很多全局函数，违背了对象的封装性 直接编程面向过程编程
+    function sayName() {
+        console.log(this.name)
+    }
+
+    let wanZhang = new Person('万章', 30, '潭州教育')
+    let yinShi = new Person('银时', 30, '潭州教育')
+
+
+
+</script>
+</body>
+</html>

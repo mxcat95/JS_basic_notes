@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Symbol数据类型</title>
+</head>
+<body>
+
+<script>
+    // ES6引入Symbol数据类型 是为了从根本上防止对象属性名的冲突
+    // ES5
+    let o = {
+        x: 1,
+        y: 2
+    }
+    o.x = function () {
+        console.log(this.y)
+    } // x属性会被覆盖为一个方法
+
+    // 采用ES6 引入的Symbol数据类型 就可以生成一个独一无二的属性名 保证与其他属性名不冲突
+
+    let s1 = Symbol('hello')
+    let s2 = Symbol('world')
+    console.log(s1, s2)
+    // 该数据类型不能与其他类型的值进行运算 可转换为字符串和布尔值 不能转换为数值
+
+    // ES2019提供了一个方法 可以直接返回描述
+    console.log(s1.description) // hello
+
+    // 对于对象而言 symbol类型的值可以作为特征属性 就能保证属性不重名 不能用点运算符
+    // 三种写法
+    let myS = Symbol()
+    let a = {}
+    a[myS] = '你好！'
+
+    let b = {
+        [myS]: '你好！'
+    }
+
+    let c = {}
+    Object.defineProperty(c, myS, {value: '你好'})
+
+    // 可用于不等常量定义 最大的好处就是 其他任何值都不可能有相同的值
+    const COLOR_RED = Symbol('红色')
+    const COLOR_GREEN = Symbol('绿色')
+
+    function getColor(color) {
+        switch (color) {
+            case COLOR_RED:
+                return COLOR_GREEN
+            case COLOR_GREEN:
+                return COLOR_RED
+            default:
+                throw new Error('无效的颜色！')
+        }
+    }
+    // Symbol适合改写魔法值 也就是未定义变量的字符串或者数值 将其改写为变量代替
+
+    /* Symbol进阶 */
+    // for() 方法 创建一个用于全局搜索的数据类型 下次创建会先搜索有没有 有则返回 没有则新建
+
+    let q1 = Symbol.for('foo')
+    let q2 = Symbol.for('foo')
+    console.log(q1 === q2) // true
+
+    // keyFor() 返回一个已经登记的symbol类型的key 未登记则返回undefined
+    console.log(Symbol.keyFor(q1)) // 'foo'
+
+    // Symbol.isConcatSpreadable 布尔值 表示该对象用于数组concat时 是否可以展开
+    let arr = [1,2]
+    let brr = [3,4]
+    let crr = {
+        '0':5,
+        '1':6,
+        'length':2
+    }
+    console.log(arr.concat(brr))
+    console.log(arr.concat(crr))
+    brr[Symbol.isConcatSpreadable] = false
+    crr[Symbol.isConcatSpreadable] = true
+    console.log(arr.concat(brr))
+    console.log(arr.concat(crr))
+</script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>控制流程</title>
+</head>
+
+<body>
+
+    <script>
+        let a = 0,
+            b = 1,
+            c = 2,
+            d = 3,
+            e = 0
+        if (b < c) {
+            a = 1
+        } else if (d > c) {
+            a = 2
+        } else {
+            a = 3
+        }
+        console.log(a);
+
+        for (; b < d;) {
+            b += 1
+            console.log(b);
+        }
+
+        do {
+            console.log(e);
+            e += 1
+        } while (e < 4)
+    </script>
+
+    <script>
+        let arr = ["a", "b", "c", "d"]
+
+        let obj = {
+            x: 'a',
+            y: 'b',
+            z: 'c',
+            n: 'd'
+        }
+
+        for (let i in arr) {
+            console.log(i + '=' + arr[i])
+        }
+        for (let i in obj) {
+            console.log(i, '=', obj[`${i}`])
+        }
+
+        for (let i of arr) {
+            console.log(i);
+        }
+
+        arr.forEach(items => {
+            console.log(items);
+        });
+
+        for (let i = 0; i < 10; i++) {
+            console.log(i);
+            if (i === 3) {
+                console.log('乱入');
+                break
+            }
+
+        }
+
+        for (let i = 0; i < 10; i++) {
+            console.log(i);
+            if (i === 3) {
+                console.log('乱入');
+                continue
+            }
+
+        }
+    </script>
+</body>
+
+</html>

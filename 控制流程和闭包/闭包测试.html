@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>闭包</title>
+</head>
+
+<body>
+    <p id="help">帮助信息会出现在这里！</p>
+    <p>E-mail: <input type="text" id="email" name="email"></p>
+    <p>Name: <input type="text" id="name" name="name"></p>
+    <p>Age: <input type="text" id="age" name="age"></p>
+
+    <script>
+        let help = document.getElementById('help')
+
+        // 输出提示信息
+        function showHlep(tip) {
+            help.innerHTML = tip
+        }
+
+        // 闭包函数
+        // function biB(tip) {
+        //     return () => {
+        //         showHlep(tip)
+        //     }
+        // }
+
+        function setupHelp() {
+            var tips = [{
+                    id: 'email',
+                    help: '请输入您的正确邮箱'
+                },
+                {
+                    id: 'name',
+                    help: '请输入您的全名'
+                },
+                {
+                    id: 'age',
+                    help: '请输入您的年龄（16岁以上）'
+                }
+            ]
+
+            for (var i = 0; i < tips.length; i++) {
+
+                (function (i) {
+                    document.getElementById(tips[i].id).onfocus = () => {
+                        showHlep(tips[i].help)
+                    }
+                })(i);
+            }
+        }
+        setupHelp()
+
+        // 闭包计数器
+        function mobao() {
+            var counter = 0
+
+            function jishu(n) {
+                counter += n
+            }
+
+            return {
+                produce: (n) => {
+                    jishu(n)
+                    console.log(`墨宝做了${counter}个小蘑菇！`)
+                },
+                eat: (n) => {
+                    jishu(-n)
+                    if (counter >= 0) {
+                        console.log(`被臭宝偷吃了${n}个小蘑菇，还剩${counter}个小蘑菇！`)
+                    } else {
+                        console.log('蘑菇被你吃完了，想吃就请墨宝再做吧！')
+                        counter = 0
+                    }
+                },
+                value: () => {
+                    return counter
+                }
+            }
+        }
+
+        var Conter = mobao()
+        Conter.produce(5)
+        Conter.eat(3)
+        console.log(Conter.value());
+    </script>
+</body>
+
+</html>

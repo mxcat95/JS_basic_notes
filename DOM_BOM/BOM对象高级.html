@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="../js封装/事件添加的通用方法.js"></script>
+    <script src="../js封装/创建元素片段区域.js"></script>
+    <title>BOM高级</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        .box,
+        .txt {
+            width: 200px;
+            height: 200px;
+            margin-top: 10px;
+            background-color: darkcyan;
+        }
+
+        ul {
+            padding-left: 0;
+        }
+
+        ul>li {
+            width: 300px;
+            background: darkcyan;
+            border-bottom: 1px solid #000;
+        }
+
+        ul>li:first-child {
+            border-top: 1px solid #000;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="box">1</div>
+    <div class="txt">2</div>
+    <ul>
+        <li>li元素1</li>
+        <li>li元素2</li>
+        <li>li元素3</li>
+        <li>li元素4</li>
+        <li>li元素5</li>
+        <li>li元素6</li>
+        <li>li元素7</li>
+        <li>li元素8</li>
+        <li>li元素9</li>
+        <li>li元素10</li>
+    </ul>
+    <script>
+        let box = document.querySelector('.box')
+        let txt = document.querySelector('.txt')
+
+        let count = 0
+
+        function click() {
+            console.log(this)
+            this.style.backgroundColor = 'red'
+            this.removeEventListener('click', click) // 取消事件监听
+        }
+        box.addEventListener('click', click)
+
+        // 绑定事件的自我清除
+        txt.addEventListener('click', function (e) {
+            count++
+            console.log(`已经点击${count}次，还剩${5-count}次`)
+            if (count > 4) {
+                this.removeEventListener(e.type, arguments.callee, false)
+                // console.log(e.type, e.target, arguments, arguments.callee)
+                console.log('不能再点击了！')
+            }
+        })
+
+        let demo = new EventUtil(txt, 'dblclick', function () {
+            console.log('我被双击了！');
+        })
+        demo.addHandler()
+
+        // 事件委托 监听公共父元素的形式监听事件
+        let list = document.querySelector('ul')
+        let ali = document.querySelectorAll('li')
+
+        function fn(ev) {
+            console.log(ev);
+            if (ev.target.tagName.toLowerCase() === 'li') {
+                console.log(ev.target.innerText);
+            }
+        }
+
+        list.addEventListener('click', fn)
+    </script>
+</body>
+
+</html>

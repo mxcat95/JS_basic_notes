@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>数据类型扩展</title>
+</head>
+<body>
+<script>
+
+    /* 字符串扩展 */
+    // 遍历 只能读取 无法修改其值
+    let str = 'dsa h das';
+    let {log} = console
+    for (const s of str) {
+        log(s)
+    }
+    // 模板字符串 可嵌套
+    let a = 100
+    let b = 200
+    let div = document.createElement('div')
+    document.querySelector('body').appendChild(div)
+
+    let divStr = `
+            <p>我是模板字符串</p>
+            <span>这是变量a的值：${a + '+' + `${b - 100}`}</span><br>
+            <span>这是变量b的值：${b}</span>
+        `
+    div.innerHTML += divStr
+
+    // 特殊用法 标签模板 用于函数的特殊调用
+    function fn(s) {
+        console.log(s)
+        console.log(arguments)
+    }
+
+    // fn('你好') // 你好
+    // fn`你好` // 打印一个数组
+    fn`你好 ${a + b} 世界 ${a * b}`
+
+    // raw
+    log(String.raw`He\nllo`) // 斜杠也被转义
+    log(String.raw({raw:'test'},0,1,2))
+
+    // 位置方法 includes startWith endWith
+    let s = 'Hello World!'
+
+    log(s.startsWith('Hello')) // 是否在开头
+    log(s.endsWith('!'))    // 是否在结尾
+    log(s.includes('W'))    // 是否在其中
+
+    // repeat 重复原字符串
+    log('x'.repeat(5))
+
+    // 补全方法 padStart padEnd 两个参数 最大长度 要补全的字符串(默认是空格补全)
+    log('x'.padEnd(5))
+    log('x'.padEnd(5,'ad'))
+    log('x'.padStart(5))
+    log('x'.padStart(5,'ad'))
+
+    // 空格消除 trimStart/trimLeft trimEnd/trimRight
+    log('  a  '.trimStart())
+    log('  a  '.trimRight())
+    log('  a  '.trim())
+
+    /* 数字格式 */
+    // Number.isFinite(数值) true (非数值) false
+    // Number.isNaN(非NaN) 一律false
+    // 这两个方法只对数值有效 全局的isFinite 和 isNaN会把其他类型转换为数值再判断
+
+    // Number.isInteger() 判断是否为整数 非数值一律false
+    // js中数值上下限
+    log(Number.MAX_SAFE_INTEGER) // 最大值 2^53
+    log(Number.MIN_SAFE_INTEGER) // 最小值 -2^53
+    log(Number.MAX_VALUE) // 科学计数法
+    log(Number.MIN_VALUE) // 科学计数法
+    log(Number.isSafeInteger(4545454545455454)) // 是否在最大范围内
+
+    /* 数学对象 */
+    // Math.trunc 用于去除一个数的小数部分 非数值则转化为数值 空值和无法截取的值则返回NaN
+    log(Math.trunc(-0.121))
+    log(Math.trunc(null))
+    log(Math.trunc())
+    log(Math.trunc(true))
+
+    // Math.sign 判断正负数和0 返回值[-1 -0 0 1 NaN]
+    log(Math.sign(54))
+
+    // 高级扩展
+    // Math.sqrt() 平方根
+    // Math.cbrt() 立方根
+    // Math.imul() 两数乘积
+    // Math.pow(x,y) x的y次方
+    // Math.hypot() 所有参数平方和的平方根
+
+    log(Math.hypot(2,1,3,4))
+
+    // 指数运算 x**y**z <==> x**(y**z) x的(y的z次方)次方
+    log(2**3**2) // 等价于2^9 = 512
+
+    let v = 2
+    v **= 2 // <==> v = v * v
+    log(v) // 4
+
+    v **= 3 // <==> v = v ** 3
+    log(v) // 64
+</script>
+</body>
+</html>

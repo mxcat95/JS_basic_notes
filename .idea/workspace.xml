@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="2d4b8fbf-88d1-468a-9b8a-25932f8ac2ba" name="默认的" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JavaScript File" />
+        <option value="HTML File" />
+      </list>
+    </option>
+  </component>
+  <component name="GitToolBoxStore">
+    <option name="projectConfigVersion" value="2" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/js封装/数据筛选.js" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/ES6相关/ES6数组扩展.html" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="ProjectId" id="1o8ryS0WL5eM5sdXkKuUff93Wkc" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+    <option name="sortByType" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="DefaultHtmlFileTemplate" value="HTML File" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="vue.rearranger.settings.migration" value="true" />
+  </component>
+  <component name="RunManager">
+    <configuration name="ES6函数类型扩展.html" type="JavascriptDebugType" nameIsGenerated="true" uri="http://localhost:63342/万佬js/ES6相关/ES6函数类型扩展.html" useBuiltInWebServerPort="true">
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="默认任务">
+      <changelist id="2d4b8fbf-88d1-468a-9b8a-25932f8ac2ba" name="默认的" comment="" />
+      <created>1612679333291</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1612679333291</updated>
+      <workItem from="1612679337366" duration="14732000" />
+      <workItem from="1613367724576" duration="13702000" />
+      <workItem from="1613456172548" duration="3191000" />
+      <workItem from="1613718439663" duration="8571000" />
+      <workItem from="1614087801384" duration="679000" />
+      <workItem from="1614138789442" duration="9000" />
+      <workItem from="1614437857973" duration="15142000" />
+      <workItem from="1614684624233" duration="16139000" />
+      <workItem from="1614768459405" duration="14696000" />
+      <workItem from="1614843725528" duration="1715000" />
+      <workItem from="1614869812438" duration="1096000" />
+      <workItem from="1615793810084" duration="2312000" />
+      <workItem from="1615796149927" duration="2199000" />
+      <workItem from="1615798362028" duration="11904000" />
+      <workItem from="1615957049645" duration="4368000" />
+      <workItem from="1616307731199" duration="12169000" />
+      <workItem from="1617276036567" duration="68000" />
+      <workItem from="1617276127068" duration="66000" />
+      <workItem from="1617277252319" duration="214000" />
+      <workItem from="1617277491173" duration="29000" />
+      <workItem from="1617277528792" duration="29000" />
+      <workItem from="1617277567897" duration="12000" />
+      <workItem from="1617277606883" duration="28000" />
+      <workItem from="1619014248176" duration="2799000" />
+      <workItem from="1619322618887" duration="8633000" />
+      <workItem from="1619618075922" duration="174000" />
+      <workItem from="1620637740663" duration="31000" />
+      <workItem from="1620637781313" duration="17669000" />
+      <workItem from="1620703907633" duration="3149000" />
+      <workItem from="1620909239023" duration="13619000" />
+      <workItem from="1621832977312" duration="875000" />
+      <workItem from="1621914907170" duration="1953000" />
+      <workItem from="1622623463155" duration="796000" />
+      <workItem from="1623070995798" duration="357000" />
+      <workItem from="1623071366384" duration="10000" />
+      <workItem from="1623071383797" duration="8000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>

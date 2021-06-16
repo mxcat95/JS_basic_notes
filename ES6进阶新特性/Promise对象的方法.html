@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promise对象的方法</title>
+</head>
+
+<body>
+    <script>
+        /*  
+            .then .catch .finally .all/ .race .resolve / .reject
+        */
+
+        // .then()
+        // 定义在原型上 为其实例添加状态改变时候的回调函数
+        // resolved rejected
+        // then方法返回一个新的Promise对象 并非原来那个
+        // 因此可以使用链式写法 then().then().then()...
+
+        let time = 5000
+        const p1 = new Promise((resolve, reject) => {
+            console.log('p1激活，正在运行中...')
+
+            let count = time / 1000;
+
+            let timer = setInterval(() => {
+                console.log(count--)
+            }, 1000);
+            // 图片对象
+            const image = new Image()
+
+            image.src = '../images/2.jpg'
+
+            setTimeout(() => {
+
+                clearInterval(timer)
+                timer = null
+                console.log('p1运行结束！状态已改变！')
+
+                // 成功 则返回图片信息
+                return resolve(image)
+
+
+                // 失败 则返回失败信息
+                reject(new Error('出错了，p1状态为失败！'))
+            }, time)
+        })
+
+        console.log(p1.then());
+
+        // 不使用catch 会使代码很臃肿 还容易出错
+
+        // p1.then(result => {
+        //     console.log('新图片加载成功！')
+        //     document.querySelector('body').appendChild(result)
+        //     console.log(result)
+        //     return result
+        // }, err => {
+        //     console.log('新图片加载失败！')
+        //     console.log(err)
+        // }).then(img => {
+        //     console.log('成功了:', img.src)
+        //     return img
+        // }, err => {
+        //     console.log('失败了', err)
+        // }).then(imgs => {
+        //     console.log('又成功了！', imgs);
+        // }, err => {
+        //     console.log('又失败了：', err);
+        // })
+
+        p1.then(result => {
+            console.log('新图片加载成功！')
+            document.querySelector('body').appendChild(result)
+            console.log(result)
+            return result
+        }).then(img => {
+            console.log('成功了:', img.src)
+            return img
+        }).then(imgs => {
+            console.log('又成功了！', imgs);
+        }).catch(err => {
+            console.log('新图片加载失败！')
+            console.log(err)
+        }).finally(() => console.log('执行完毕！'))
+
+        setTimeout(() => {
+            console.log(p1.then())
+        }, time + 1000);
+        // 注意区分同步和异步 同步就是浏览器从上往下执行
+        // 先依次创造p1,然后输出p1.then之后的状态 但此时p1状态还没有改变
+        // 所以输出的新对象还是pending状态
+        // 当p1内部的回到函数执行之后 里面的状态就已经固定了
+        // 再次输出p1.then 就是已经固定的状态:
+        // (resolved or rejected or fulfilled)
+
+        // .catch()
+        // 是.then(null,rejected) 或 .then(undefined，rejected)的别名
+        // 用于指定发生错误时的回调函数
+
+        p1.then(val => console.log('成功：', val)).catch(err => console.log('失败：', err))
+
+        // 等价于
+        p1.then(val => console.log('成功：', val)).then(null, err => console.log('失败：', err))
+
+        // 其实reject的作用 等同于抛出错误
+
+        const prom = new Promise((resolve, reject) => {
+            throw new Error('测试!')
+        })
+
+        prom.catch(err => console.log(err)) // Error: 测试！
+
+        // 调用resolve或者reject方法之后 promise使命就完成了
+        // 后继操作应该放到then里面 而不应该直接写在resolve或者reject后面
+        // 所以最好在它们前面加上return语句 防止意外
+        // 因此 当promise状态已经改变为resolved 就不会再抛出异常了
+
+        const promi = new Promise((resolve, reject) => {
+            resolve('ok!')
+            throw new Error('测试!')
+        })
+
+        promi
+            .then(value => console.log(value, y)) // ok!
+            .catch(err => console.log(err, y + 1))
+            .catch(err => console.log(err))
+            .then(() => console.log('yes'))
+
+        // promise对象的错误具有冒泡性质 会一直向后传递
+        // 直到被捕获
+        // 因此 好的写法是 promise.then().catch()
+        // 不要在then里面定义reject状态的回调函数 把它放到catch里去
+
+        // promise内部的报错 不会中断外部程序的运行 这就是一个异步的好处
+
+        // catch方法抛出错误 可在后续再跟上catch处理
+
+
+        // .finally方法
+        // 与promise最后的状态无关 时钟会执行的语句
+        // 总是返回原来的值
+
+
+        // .all / .race方法
+        // Promise.all 用于将多个Promise实例包装成一个新的实例
+        // 若参数不是promise对象 会用resolve自动转换
+
+        // 两种情况
+        // 只有所有实例的状态为fulfilled
+        // 其返回值组成数组 传递给调用它们的实例
+        // 只要有一个返回rejected 则调用实例也会变成rejected
+        // 第一个被rejected的实例的返回值 会传给回调函数
+
+        Promise.all([p1, prom, promi]).then(() => console.log('所有实例都成功！')).catch(err => console.log(err))
+
+        // 如果作为参数的实例自己定义了catch方法
+        // 一旦它被rejected 并不会触发all.catch
+
+        const pa = new Promise((resolve, reject) => {
+            resolve('hello')
+        }).then(r => r).catch(e => e)
+
+        const pb = new Promise((resolve, reject) => {
+            throw new Error('报错了！')
+        }).then(r => r).catch(e => e)
+
+        Promise.all([pa, pb]).then(r => console.log(r)).catch(e => console.log(e))
+        // [hello Error: 报错了]
+
+        // pa成功 pb先是报错 但是pb自己的catch方法
+        // 返回一个新的promise对象
+        // 这个新的promise对象执行完catch之后 变为fulfilled
+        // 导致两个实例都是fulfilled状态 因此执行all.then()方法
+
+        // race 和all类似 只是谁先变化就传递谁
+        Promise.race([p1, pa, pb]).then(r => console.log(r)).catch(err => console.log(err))
+        // hello pa 先改变
+
+        // .resolve方法
+        // 将现有对象 转换成Promise对象
+        /* 
+            参数情况：
+                1.实例对象 完璧归赵
+                2.thenable对象 => 转化为promise对象
+                    然后执行其then方法
+                3.不具有then方法的对象 或者非对象
+                    不属于异步操作 直接返回resolved实例
+                4.不带任何参数 直接返回resolved实例
+        */
+
+        let thenable = {
+            then(resolve, reject) {
+                resolve(42)
+            }
+        }
+
+        let thenP = Promise.resolve(thenable)
+        thenP.then(v => console.log(v)) // 42
+
+        Promise.resolve('Hello').then(v => console.log(v)) // Hello 在42之前
+
+        // .reject方法
+        // 返回一个新实例 状态为rejected
+        // 线束原封不动的输出 变为后续方法的参数
+
+        let thenUnable = {
+            then(resolve, reject) {
+                reject('出错了')
+            }
+        }
+
+        Promise.reject(thenUnable).then(v => console.log(v)).catch(e => console.log(e))
+        // 参数是对象 返回结果还是同一个对象
+
+        // promise应用
+
+        // 图片加载机制
+        class PreLoadImage {
+            constructor(path) {
+                this.path = path
+            }
+            state() {
+                return new Promise((resolve, reject) => {
+                    const image = new Image()
+                    image.onload = () => {
+                        resolve(image)
+                    }
+                    image.onerror = reject
+                    image.src = this.path
+                })
+            }
+        }
+
+        const img1 = new PreLoadImage('../images/1.jpg')
+        img1.state().then(v => {
+            console.log(v)
+            document.querySelector('body').appendChild(v)
+        }).catch(e => console.log(e))
+    </script>
+</body>
+
+</html>

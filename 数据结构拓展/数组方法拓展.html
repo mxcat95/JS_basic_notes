@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>数组方法拓展</title>
+</head>
+<body>
+
+<div>我是一号</div>
+<div>我是二号</div>
+<div>我是三号</div>
+<div>我是四号</div>
+<div>我是五号</div>
+<script>
+    /* 数组拓展 */
+
+    /* Array.from 作用 将类数组对象和可遍历对象转化为真数组 */
+
+    // 类数组对象
+    let arrayLike = {
+        '0': 'a',
+        '1': 'b',
+        '2': 'c',
+        'length': 3
+    }
+    console.log(arrayLike)
+    // console.log([...arrayLike]) 此方法无法对不可遍历对象使用
+    console.log(Array.from({x: 1, y: 3})) // 不具备length属性的对象，就只会返回空数组
+
+    // 转化为真数组
+    // ES5
+    var arr1 = [].slice.call(arrayLike)
+    console.log(arr1)
+
+    // ES6
+    let arr2 = Array.from(arrayLike)
+    console.log(arr2)
+
+    // NodeList对象
+    let divs = document.querySelectorAll('div')
+    // 使用Array.from 方法
+    let divF = Array.from(divs)
+    console.log(divF)
+    // 使用数组拓展运算符
+    console.log([...divs])
+
+    // arguments对象
+    function foo(x, y, z) {
+        var args = Array.from(arguments)
+        console.log(args)
+        // ...
+    }
+
+    foo(1, 2, 3)
+    /* Array.from 的第二个参数 */
+    let array = {
+        '0': 1,
+        '1': 2,
+        '2': 3,
+        'length': 3
+    }
+    let newArray = Array.from(array, x => x ** 2)
+    console.log(newArray) // [1,4,9]
+    // 等同于
+    Array.from(array).map(x => x ** 2)
+
+    /* Array.of 作用 将一组数组转化为数组 用于弥补Array的不足 */
+    console.log(Array(), Array(3), Array(1, 2, 3)) // 只有一个参数 则为length
+    console.log(Array.of(), Array.of(3), Array.of(1, 2, 3)) // 完美
+
+    /* copyWithin(开始替换位置，想要替换的值所在位置，替换到那个位置结束)  */
+    // 将指定成员复制到其他位置 会覆盖原有数组
+    let arrN = [1, 2, 3, 4, 5]
+    arrN.copyWithin(0, 3)
+    console.log(arrN) // [4, 5, 3, 4, 5]
+    arrN.copyWithin(0, -3, -2)
+    console.log(arrN) // [3, 5, 3, 4, 5]
+
+    /* find() / findIndex() 找到第一个符合条件的数组项目/索引 没有则返回undefined/-1 */
+    let arrF = arrN.find((value, index, array) => {
+        return value > 2
+    })
+    let arrFi = arrN.findIndex((value, index, array) => {
+        return value > 2
+    })
+    console.log(arrF, arrFi) // 3 0
+
+    /* 第二个参数可绑定回调函数的this对象 */
+
+    function f(v) {
+        return v > this.age
+    }
+
+    let person = {
+        name: 'moBao',
+        age: 15
+    }
+    let ageF = [12, 16, 20, 25].find(f, person)
+    console.log(ageF) // 16
+
+    /* fill() 使用给定值填充数组 */
+    console.log(['a', 'b', 'c'].fill(5)) // [5,5,5] 完全填充
+    console.log(['a', 'b', 'c'].fill(7, 1, 2)) // ['a',7,'c'] 指定起始位置填充
+    console.log(['a', 'b', 'c'].fill({name: 'moBao'})) // [{name:'moBao'},{name:'moBao'},{name:'moBao'}]
+    // 只是引用 不是深拷贝对象
+
+    /* entries() keys() values() */
+    // ES6新语法 对数组进行遍历 搭配for of使用
+    let ar = ['a', 'b', 'c']
+    for (let index of ar.keys()) {
+        console.log(index) // 返回索引
+    }
+
+    for (let item of ar.values()) {
+        console.log(item) // 返回值
+    }
+
+    for (let [index, item] of ar.entries()) {
+        console.log(index, item) // 返回索引和值
+    }
+
+    /* includes() 返回一个布尔值 表示某个数组是否包含给定的值 */
+    console.log(ar.includes('a')) // true
+    console.log(ar.includes('a',-4)) // true
+    console.log([NaN].indexOf(NaN)) // 不严格相等 返回-1 误判
+    console.log([NaN].includes(NaN)) // 返回true
+
+    /* flat() flatMap() */
+    // flat 将数组嵌套拉平，变成一维数组
+    let qr = [1,2, ,3,[4,5],[6,[7,[8]]]] // 四维数组
+    console.log(qr.flat()) // 有空格会跳过
+    console.log(qr.flat(2)) // 拉平为二维
+    console.log(qr.flat(3)) // 拉平为一维
+    console.log(qr.flat(Infinity)) // 不管几层都拉成一维
+
+    // flatMap 类似于map方法 返回一个新数组 然后对返回数组执行flat方法
+    console.log([1,2,3,4].map(x=>[x,x*2]))
+    console.log([1,2,3,4].flatMap(x=>[x,x*2])) // 相当于先map 再执行flat方法
+
+</script>
+</body>
+</html>

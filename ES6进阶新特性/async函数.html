@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>async函数相关</title>
+</head>
+
+<body>
+    <script>
+        /* 
+            1.async函数：
+                Generator语法糖
+                    将G函数的*号换成 async
+                    将G函数的yield换成 await
+        */
+
+        const gen = function* () {
+            yield console.log(1)
+            yield console.log(2)
+            return 3
+        }
+        let g = gen()
+        g.next() // 1
+        g.next() // 2
+        console.log(g.next().value) // 3
+        console.log(g.next().value) // undefined
+
+        // 等同于
+
+        const asyncGen = async function () {
+            await console.log(1)
+            await console.log(2)
+            return 3
+        }
+        asyncGen().then(r => {
+            console.log(r)
+        }) // 1 2 3
+
+        /* 
+            2.async函数改进之处：
+                (1).内置执行器：
+                    自带内置执行器
+                    不需要像G函数一样调用next方法
+                (2).更好的语义：
+                    async表示函数里有异步操作
+                    await表示后面的表达式需要等待结果
+                (3).适用性更广：
+                    await指令后面可以使Promise对象和原始类型
+                (4).返回值是一个Promise对象：
+                     比G函数返回的Iterator对象方便
+                     可调用then方法指定下步操作
+        */
+
+        // 基本用法
+        // 返回一个Promise对象 使用then方法添加回调函数
+        // 当函数执行的时候 一旦遇到await就先返回 等异步操作完成之后再执行函数体内后续语句
+
+        // function timeOut(ms) {
+        //     return new Promise(resolve => {
+        //         setTimeout(resolve, ms)
+        //     })
+        // }
+
+        // 异步应用 等到返回的promise对象状态改变之后 再执行输出语句
+        async function asyncPrint(value, ms) {
+            await timeOut(ms)
+            console.log(value)
+        }
+        asyncPrint('我先传进来的，但是得3秒后才能出来', 3000)
+
+        // async函数返回的是Promise对象 可以作为await命令的参数
+        // 所以上述代码可以改写为
+        async function timeOut(ms) {
+            await new Promise(resolve => {
+                setTimeout(resolve, ms)
+            })
+        }
+
+        /* 
+            语法应用：
+                1.返回值：
+                    返回一个Promise对象 return语句的返回值会成为then方法回调函数的参数
+                    内部抛出的错误 会被catch方法回调函数接收到
+                2.Promise对象的状态变化：
+                    async函数返回的Promise对象 必须等到内部所有await命令后面的Promise对象
+                    执行完毕，才会发生改变 除非遇到return或者抛出错误
+                    也就是 只有async函数内部的异步操作执行完 才会执行then方法指定的回调函数
+                3.await命令：
+                    正常情况下，await命令后面是一个Promise对象 返回该对象的结果
+                    如果不是Promise对象 就直接返回对应的值
+                    如果是部署了then方法的对象 会将其等同于Promise对象
+                    如果await后面的Promise对象如果变为reject状态
+                    则reject参数会被catch方法捕捉到
+                4.注意点：
+                    建议把await语句写在内部的try...catch语句之内
+                    如果多个await命令后面的异步操作不存在继发关系 最好让其同时触发
+                    以此缩短程序运行时间
+                    该命令只能用在异步函数中
+                    该指令可以保留运行堆栈
+                    
+        */
+
+        async function f() {
+            throw new Error('出错了！')
+        }
+
+        f().then(r => console.log(r)).catch(e => console.log(e))
+
+        async function getTitle(url) {
+            // 抓取网页          
+            let response = await fetch(url)
+            // 取出文本
+            let html = await response.text()
+            // 匹配页面标题
+            return html.match(/<title>([\s\S]+)<\/title>/i)[1]
+        }
+        getTitle(
+                'http://127.0.0.1:5500/%E8%BF%9B%E9%98%B6%E6%96%B0%E7%89%B9%E6%80%A7/async%E5%87%BD%E6%95%B0.html')
+            .then(e => console.log(e)) // async函数相关
+
+        class Sleep {
+            constructor(timeout) {
+                this.timeout = timeout
+            }
+            then(resolve, reject) {
+                const startTime = Date.now()
+                setTimeout(() => {
+                    console.log(startTime)
+                    resolve('你好世界！')
+                }, this.timeout)
+            }
+        }
+
+        ;
+        (async () => {
+            const sleepTime = await new Sleep(1000) // 将其等同于Promise对象
+            console.log(sleepTime)
+        })();
+
+
+        async function ff() {
+            // await Promise.reject('出错了！')
+            // await Promise.resolve('hello world!')  // 不会执行
+            // 内部捕捉到错误 不影响下一个异步操作的执行
+            await Promise.reject('出错了！').catch(e => console.log(e))
+            return await Promise.resolve('hello world!')
+        }
+        // ff().then(v => console.log(v)).catch(e => console.log(e))
+        ff().then(v => console.log(v)) // 出错了 hello world
+
+        // 非继发关系的异步 被写成继发 运行速度减半
+        async function fo() {
+            let foo = await getFoo()
+            let bar = await getBar()
+        }
+        // 改为同时触发 缩短运行速度
+        async function fos() {
+            let [foo, bar] = await Promise.all(getFoo(), getBar())
+        }
+
+        async function dbfun(db) {
+            let dbs = [{}, {}, {}]
+
+            // 报错
+            // dbs.forEach((doc) => {
+            //     await db.post(doc)
+            // })
+        }
+
+        // 改写为
+        function dbfu(db) {
+            let dbs = [{}, {}, {}]
+
+            // 可能得到错误结果
+            dbs.forEach(async (doc) => {
+                await db.post(doc)
+            })
+        }
+
+        // 正确的写法
+
+        async function dbfuw(db) {
+            let dbs = [{}, {}, {}]
+
+            for (const doc of dbs) {
+                await db.post(doc)
+            }
+        }
+
+        // 如果需要多个请求并发执行 可以使用Promise.all方法
+        async function dbfup(db) {
+            let dbs = [{}, {}, {}]
+            let pros = dbs.map((doc) => db.post(doc))
+
+            let results = await Promise.all(pros)
+
+            // 或者
+            let res = []
+
+            for (const it of pros) {
+                res.push(await it)
+            }
+
+            console.log(results)
+        }
+
+        // 下面代码 a函数不会等着b函数运行完毕 因此b或者c报错的时候 错误堆栈不会包括a
+        const a = () => {
+            b().then(() => c())
+        }
+
+        // 下面代码 a函数会等着b函数运行完毕 b或者c报错的时候 错误堆栈会包括a
+        const m = async () => {
+            await b()
+            c()
+        }
+
+        // 实现原理：
+        // 就是讲Generator函数和自动执行器包装在一个函数里 
+        // 本质上 就是闭包原理
+
+        async function fnn(args) {
+            // ...
+        }
+        // 等同于
+        function fnn1(args) {
+            // spawn即为自动执行器
+            return spawn(function* () {
+                // ...
+            })
+        }
+
+        // 实现自动执行
+        function spawn(genF) {
+            return new Promise((resolve, reject) => {
+                // 执行Generator函数 返回一个遍历器对象
+                const gen = genF()
+
+                // 自动执行遍历器的next方法 遍历value 处理异常
+                function step(nextF) {
+                    let next
+                    try {
+                        next = nextF()
+                    } catch (e) {
+                        return reject(e)
+                    }
+                    if (next.done) {
+                        return resolve(next.value)
+                    }
+
+                    Promise.resolve(next.value)
+                        .then(v => step(() => gen.next(v)))
+                        .catch(e => step(() => gen.throw(e)))
+                }
+
+                step(() => gen.next(undefined))
+            })
+        }
+
+        function goo() {
+            return spawn(function* () {
+                yield console.log(1)
+                yield console.log(2)
+                yield console.log(3)
+                return 4
+            })
+        }
+        goo().then(r => console.log(r)).catch(e => console.log(e)) // 1 2 3 4
+
+        // 其他问题
+
+        // 假定某个DOM元素上部署了一系列动画 前一个结束才能执行后一个
+        // 如果当中有一个出错了 就中断 并返回上一个成功的返回值
+
+        // Promise写法：
+        function animationPromise(el, animations) {
+            // 保存上一个动画的返回值
+            let ret = null
+
+            // 新建一个Promise对象
+            let p = Promise.resolve()
+
+            // 使用then方法 添加所有动画
+            for (const anim of animations) {
+                p = p.then(val => {
+                    ret = val
+                    return anim(el)
+                })
+            }
+
+            // 返回一个部署了错误处理机制的Promise
+            return p.catch(e => {}).then(() => ret)
+        }
+
+        // Generator写法：
+        function animationGenerator(el, animations) {
+            // spawn即为自动执行器
+            return spawn(function* () {
+                let ret = null
+                try {
+                    for (const anim of animations) {
+                        ret = yield anim(el)
+                    }
+                } catch (error) {
+
+                }
+                return ret
+            })
+        }
+
+        // async函数写法：
+        async function animationAsync(el, animations) {
+            let ret = null
+            try {
+                for (const anim of animations) {
+                    ret = await anim(el)
+                }
+            } catch (e) {
+
+            }
+            return ret
+        }
+
+        // 按顺序完成异步操作
+
+        // 例如 依次远程读取一组URL 然后按照读取的顺序输出结果
+
+        // Promise写法：
+        function logInOrder(urls) {
+            // 读取远程所有URL 转化为文本
+            const textPromises = urls.map(url => fetch(url).then(response => response.text()))
+
+            // 依次输出
+            textPromises.reduce((chain, textPromise) => {
+                return chain.then(() => textPromise)
+                    .then(text => console.log(text))
+            }, Promise.resolve())
+        }
+
+        // 继发版async:
+        async function logInOrederAsync(urls) {
+            for (const url of urls) {
+                // 先抓取url
+                const response = await fetch(url)
+                // 再依次打印
+                console.log(await response.text())
+            }
+        }
+
+        // 并发版async:
+        async function logInOrederAsyncPlus(urls) {
+
+            // 并发读取远程URL
+            const textPromises = urls.map(async url => {
+                const response = await fetch(url)
+
+                return response.text()
+            })
+
+            // 再依次打印
+            for (const textPromise of textPromises) {
+                console.log(await textPromise)
+            }
+        }
+
+        let urls = [
+            'http://127.0.0.1:5500/%E8%BF%9B%E9%98%B6%E6%96%B0%E7%89%B9%E6%80%A7/%E6%B5%8B%E8%AF%951.html',
+            'http://127.0.0.1:5500/%E8%BF%9B%E9%98%B6%E6%96%B0%E7%89%B9%E6%80%A7/%E6%B5%8B%E8%AF%952.html'
+        ]
+        logInOrederAsyncPlus(urls)
+    </script>
+</body>
+
+</html>

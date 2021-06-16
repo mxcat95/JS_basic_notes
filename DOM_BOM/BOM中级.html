@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>BOM中级</title>
+</head>
+<body>
+
+<script>
+    console.log(window.outerHeight, window.outerWidth)
+    let newWindow = window.open("http://www.baidu.com", "_blank", "height=400,width=400,top=10,left=10,resizable=yes,location=yes,menubar=yes,toolbar=yes");
+    setTimeout(()=>{
+        newWindow.close()
+    },3000)
+
+    // location对象
+    // 查询字符串
+    function getSearchMsg() {
+        if(location.search.length > 0){
+            let qs = location.search, // 获取当前搜索参数
+                items = qs.split("&") // 字符串分隔为数组
+            let args = {}, // 存储经过处理的字符串
+                item = null, // 预存中间数据的临时数据
+                name, // 预存参数名
+                value // 预存值
+            for (let i = 0; i < items.length; i++) {
+                item = items[i].split("="); // 再次分隔数组
+                name = window.decodeURIComponent(item[0]) // 获取参数名并转码
+                value = window.decodeURIComponent(item[1]) // 获取参数值并转码
+                args[name] = value // 转码后存储到对象中
+            }
+                return args
+        }
+    }
+
+    console.log(getSearchMsg())
+
+    /* history对象 */
+    console.log(history)
+</script>
+</body>
+</html>

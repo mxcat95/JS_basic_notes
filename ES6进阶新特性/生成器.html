@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>生成器</title>
+</head>
+
+<body>
+    <script>
+        /*  Generator 函数  执行结果是一个指向内部状态的指针对象 也就是遍历器对象
+         *   必须调用遍历器对象的next方法，指针就会指向下一个yield(生成)表达式 或者return语句
+         * */
+        function* helloWorldGenerator() {
+            yield 'hello'
+            yield 'world'
+            return 'ending'
+        }
+
+        let hw = helloWorldGenerator()
+        console.log(hw.next(), hw.next(), hw.next())
+
+        /*  yield表达式 后面跟的表达式 会被解析为返回对象的value属性的值
+            遇到return语句，即返回undefined
+            惰性求值：
+                只有next方法将指针移到yield的时候 才会去求值
+            暂缓执行：
+                非yield表达式的其他语句，在被迭代器对象的next方法执行之前，不会执行
+                一旦执行了next方法，则相关语句会且只会运行一次
+             使用规范：
+                只能在Generator函数里使用
+                如果yield表达式嵌套在其他语句当中，要使用()括起来
+                用作函数参数或者赋值操作的右边 则不用小括号
+             使用场景：
+                可以把Generator函数赋值给对象的Symbol.iterator属性 使得该对象具有Iterator接口
+         */
+        function* add(x, y) {
+            console.log('这个语句会和下面的值一起执行!')
+            yield x + y
+            console.log(x + y, '这句语句不会和上一句一起执行！需要第二次调用next才能执行！')
+        }
+
+        let ad = add(1, 2)
+        console.log(ad)
+        console.log(ad.next()) // {value: 3, done: false}
+
+        // yield规范性
+        function* demo() {
+            yield '你好！'
+            console.log((yield '要加括号！'))
+            console.log(add(yield 1, yield 3), '参数不用加括号')
+            let input = yield
+            return input + (yield 1)
+        }
+
+        let dem = demo()
+
+        // 使用场景
+        let myIterator = {}
+        myIterator[Symbol.iterator] = function* () {
+            yield 1
+            yield 2
+            yield 3
+        }
+        console.log([...myIterator]) // [1,2,3]
+
+        /*  next 参数 yield表达式本身没有返回值 或者说返回总是undefined
+         *   next可以有一个参数 被当做上一个yield语句的返回值
+         *   在Generator函数内部的语句 只有next运行一次 才会执行一句 循环也只会执行一次
+         *  */
+
+        function* f() {
+            for (var i = 0; true; i++) {
+                var reset = yield i
+                if (reset) i = -1
+            }
+        }
+
+        var g = f()
+        g.next() // {value: 0, done: false}
+        g.next() // {value: 1, done: false}
+        g.next() // {value: 2, done: false}
+        g.next(true) // {value: 0, done: false} 重置了
+        g.next() // {value: 0, done: false} 重新循环
+
+        function* foo(x) {
+            var y = 2 * (yield(x + 1))
+            var z = yield(y / 3)
+            console.log(x, y, z)
+            return (x + y + z)
+        }
+
+        var a = foo(5)
+        console.log(a.next(), a.next(), a.next())
+        var b = foo(5)
+        console.log(b.next(), b.next(12), b.next(13))
+
+        /* 注意点：
+         *   每次调用返回的迭代器对象，运行到yield就会终止 下次调用next方法才会继续运行
+         *   next可以带一个参数 会被当做上一个yield的返回值
+         *  */
+
+        /**
+         *  for...of...循环与生成器
+         *      可以自动遍历生成器运行生成的遍历器对象 不再需要调用next方法
+         *  */
+        function* f1() {
+            yield 1
+            yield 2
+            yield 3
+            yield 4
+            yield 5
+            return 6
+        }
+
+        for (let v of f1()) {
+            console.log(v) // 1 2 3 4 5
+            // 只要next方法中的done属性为true for...of就会终止 所以只能遍历到5
+        }
+
+        // 典型案例：斐波那锲数列 1 1 2 3 5 8 13 21 34...
+        function* feiBoNaQie() {
+            let [prev, curr] = [0, 1]
+            for (;;) {
+                yield curr;
+                [prev, curr] = [curr, prev + curr]
+            }
+            // 上述代码相当于
+            // yield 1
+            // yield 1
+            // yield 2
+            // yield 3
+            // yield 5
+            // yield 8
+            // ...
+        }
+
+        for (let n of feiBoNaQie()) {
+            if (n > 1000) {
+                break
+            }
+            console.log(n)
+        }
+
+        // for...of循环实现对象的遍历
+
+        // 方法一：
+        function* objectEntries(obj) {
+            let propKeys = Reflect.ownKeys(obj);
+
+            for (let propKey of propKeys) {
+                yield [propKey, obj[propKey]]
+            }
+        }
+        let jame = {
+            first: 'Jame',
+            last: 'Deo'
+        }
+        for (const [key, value] of objectEntries(jame)) {
+            console.log(`${key}:${value}`)
+        }
+
+        // 方法二 将Generator函数加到对象的Symbol.iterator属性上 更方便一些
+        function* objectEntriesPlus() {
+            let propKeys = Object.keys(this);
+
+            for (let propKey of propKeys) {
+                yield [propKey, this[propKey]]
+            }
+        }
+        jame[Symbol.iterator] = objectEntriesPlus
+        for (const [key, value] of jame) {
+            console.log(`${key}:${value}`)
+        }
+
+        // for...of 扩展运算符 解构赋值 Array.from方法 都可以将生成器返回的遍历器函数作为参数
+        console.log([...f1()]) // [1,2,3,4,5]
+        console.log(Array.from(f1())) // [1,2,3,4,5]
+        let [l, k, j, s, d] = f1()
+        console.log(l, k, j, s, d) // 1 2 3 4 5
+        for (const number of f1()) {
+            console.log(number)
+        }
+
+        /**
+         *  函数的报错处理
+         *      try catch 语句
+         *
+         *      其他语句;
+         *      try{
+         *          可能出错的代码; 在这个代码块内出错的语句不会影响代码块外部其他语句的正常运行
+         *          其他语句; 错误代码之后的块内代码被终止 无法执行
+         *      }catch{
+         *          处理出错信息
+         *      }
+         *      其他语句;
+         *
+         *      throw语句 抛出异常 可自定义抛出内容
+         *          要注意：必须先抛出异常 才能被catch语句捕获到异常信息
+         *
+         *      finally语句:
+         *          允许在try和catch之后执行代码 不管try和catch的结果如何 不过基本上没什么用 可忽略
+         *
+         *      错误信息对象：
+         *          Error{
+         *              name: 设置或者返回错误名,
+         *                  类型：
+         *                      EvalError: 在eval()函数中发生错误
+         *                      Range...: 超出数字范围
+         *                      Reference...: 非法引用
+         *                      Syntax...: 语法错误
+         *                      Type...: 类型错误
+         *                      URI...: 编码错误 在Unicode()函数中发生错误
+         *              message: 设置或返回错误信息(一条字符串)
+         *          }
+         */
+
+        function sayName(s) {
+            console.log('hello', s)
+        }
+        try {
+            sayName("扑克猫")
+            // throw '你的函数不存在！好好看！'
+            sayname('扑克猫') // 函数名出错了
+            console.log("同一个作用域内，出错代码之后的代码无法运行！")
+        } catch (err) {
+            console.log('函数出错，错误信息为：\n')
+            console.log(err)
+        } finally {
+            console.log('我在finally里面！')
+        }
+        console.log('其实放在finally外面也一样！')
+        console.log('这一行代码正常运行！')
+        let min = 0,
+            max = -1
+        try {
+            if (max < min) {
+                let err = new Error('搞错了搞错了！再检查一下！') // 自定义错误信息
+                err.name = "NumberError" // 自定义错误类型
+                throw err
+            } else {
+                console.log(true)
+            }
+        } catch (err) {
+            console.log(err.name)
+            console.log(err.message)
+        }
+    </script>
+</body>
+
+</html>

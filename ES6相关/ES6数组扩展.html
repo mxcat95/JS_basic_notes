@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>数组扩展</title>
+</head>
+
+<body>
+    <script src="../js封装/尾调用优化.js"></script>
+    <script>
+        /**
+         * 本节内容：
+         *  函数的尾调用
+         *  尾调用的优化
+         *  数组扩展运算
+         */
+
+        /* 函数的尾调用
+                某个函数的最后一步是 返回 调用 另一个函数的执行结果
+                eg:
+                    function f(x){
+                        return g(x)
+                    }
+                f函数的最后一步就是返回调用g函数的执行结果
+                    function f(x){
+                        let y = g(x)
+                        return y
+                   }
+
+                    function f(x){
+                        return g(x) + 1
+                   }
+
+                   function f(x){
+                        g(x)
+                   }
+                   以上三种情况都不能称之为尾调用，因为最后一步不是返回调用另一个函数的执行结果
+                   function f(x){
+                        if(x > 0){
+                           return g(x)
+                        }
+                        return h(x)
+                   }
+                   这种形式也是尾调用
+         */
+
+        /* 尾调用的优化
+                内存优化：
+                    原理：
+                        函数调用会在内存形成一个“调用记录”， 即“调用帧”， 保存调用位置和内部变量等
+                        函数A调用函数B，函数B再调用函数C，以此类推...
+                        函数A的调用帧上方会出现B的调用帧，B上会出现C的调用帧...
+                        形成调用栈(call stack)
+                    优化：
+                        尾调用是函数最后一步操作，不需要保留外层函数的调用帧
+                        只需要直接用内层函数的调用帧取代就好了
+                        也就是说，尾调用的话，可以将不需要的数据直接清除掉，以减少内存消耗
+                复杂度优化：
+                    函数调用自身成为递归
+                    尾调用自身 则为尾递归
+                    递归非常消耗内存 需要保存大量调用帧 容易发生“最大堆栈内存溢出”
+                    但是尾递归只存在一个调用帧 所以不存在栈溢出的问题
+
+                    尾递归的实现 需要改写递归函数 确保最后一步只调用自身
+                    需要把所有用到的内部变量改写成函数的参数
+         */
+        function f() {
+            let m = 1
+            let n = 2
+            return g(m + n)
+        }
+
+        // 等价于
+        function f1() {
+            return g(3)
+        }
+
+        // 等价于 g(3)
+
+        function addOne(a) {
+            var one = 1
+
+            function inner(b) {
+                return b + one
+            }
+
+            return inner(a)
+        }
+
+        // 以上代码不会优化 因为外层函数内部的变量被内层函数调用了
+        /* 复杂度优化 */
+        // 阶乘递归函数
+        function factorial(n) {
+            if (n === 1) return 1
+            return n * factorial(n - 1) // 最后一步有运算 不是尾调用
+        }
+
+        // 120  需要保存5个调用记录(需要保存上一次函数的参数，相当于5个闭包) 复杂度很高
+        console.log(factorial(5))
+
+        // 尾递归写法
+        function factorialPlus(n, total) {
+            if (n === 1) return total
+            return factorialPlus(n - 1, n * total)
+        }
+        console.log(factorialPlus(5, 1)) // 120 不会发生栈内存溢出
+
+        // 上述写法的缺点是不太直观 为什么计算5的阶乘 需要两个参数？
+
+        // 继续优化
+        // 方法一 外部函数优化 麻烦(￣ェ￣ ！) 或者柯理化
+        function factorial2(n) {
+            return factorialPlus(n, 1)
+        }
+        console.log(factorial2(5))
+
+        // 柯理化 也麻烦(￣ェ￣ ！)
+        function currency(fn, n) {
+            return function (m) {
+                return fn.call(this, m, n)
+            }
+        }
+        const fact5 = currency(factorialPlus, 1)
+        console.log(fact5(5)) // 120
+
+        // 方法二 ES6语法 默认参数设置 简单解决
+        function factorialPlusX(n, total = 1) {
+            if (n === 1) return total
+            return factorialPlus(n - 1, n * total)
+        }
+        console.log(factorialPlusX(5)) // 120
+
+        // 函数尾调用的开启条件模拟
+        function sum(x, y) {
+            if (y > 0) {
+                return sum(x + 1, y - 1)
+            } else return x
+        }
+        console.log(sum(1, 5)) // 6
+        // console.log(sum(1, 10000)) // 报错 栈溢出
+
+        // 使用蹦床函数让递归变成循环 即传入一个函数 返回一个函数 然后执行该函数 避免递归执行
+        function trampoline(f) {
+            while (f && f instanceof Function) {
+                f = f()
+            }
+            return f
+        }
+
+        function sum1(x, y) {
+            if (y > 0) {
+                return sum1.bind(null, x + 1, y - 1)
+            } else return x
+        }
+
+        console.log(trampoline(sum1(1, 10000))) // 100001
+
+        // 尾调用优化
+        var sumPlus = tco(function (x, y) {
+            if (y > 0) {
+                return sumPlus(x + 1, y - 1)
+            } else return x
+        })
+
+        sumPlus(1, 10) // 11
+
+        /* 数组扩展之运算符 */
+        // 扩展运算符 三个点 好比是rest参数的逆运算 将一个数组转换为参数序列
+        // 主要用于函数的调用
+        console.log(1, ...[2, 3, 4], 5) // 1,2,3,4,5
+        function add(x, y) {
+            return x + y
+        }
+
+        const num = [45, 6]
+        console.log(add(...num)) // 51
+
+        /* 应用场景 */
+        /* 数组传参 */
+
+        // ES5写法
+        function es5(x, y, z) {
+            // ...
+        }
+        es5.apply(null, [1, 2, 3])
+
+        // ES6写法
+        function es6(x, y, z) {
+            // ...
+        }
+        es6(...[1, 2, 3]) // 不再需要apply方法
+
+        console.log(Math.max.apply(null, [14, 12, 3])) // es5
+        console.log(Math.max(...[14, 12, 3])) // es6
+        console.log(Math.max(14, 12, 3)) // 等同于此写法
+
+        var a1 = [1, 2, 3]
+        var a2 = [4, 5, 6]
+        Array.prototype.push.apply(a1, a2) // es5
+
+        let b1 = [6, 5, 4]
+        let b2 = [3, 2, 1]
+        b1.push(...b2) // es6 简洁
+
+        /* 复制数组 */
+        // 引用类型的拷贝只不过是浅拷贝 拷贝的只是引用 而非数据
+
+        let c1 = [1, 2, 3, 4, 5]
+        let c2 = c1 // 给c1数据新增一个别名引用
+        c2[0] = 2
+        console.log(c1) // [2, 2, 3, 4, 5] 这就是浅拷贝
+
+        // 用扩展运算符可实现深拷贝
+        let d1 = [1, 2, 3, 4, 5]
+        let d2 = [...d1] // 深拷贝
+        d2[0] = 2
+        console.log(d1) // [1, 2, 3, 4, 5] 这就是深拷贝
+
+        /* 合并数组 */
+        let e1 = [1, 2, 3]
+        let e2 = [4, 5, 6]
+        console.log(e1.concat(e2)) // [1,2,3,4,5,6] es5合并
+        console.log([...e1, ...e2]) // [1,2,3,4,5,6] es6合并
+
+        /* 解构赋值 */
+        const [first, ...rest] = [1, 2, 3, 4, 5]
+        // first 1
+        // rest [2,3,4,5]
+
+        /* 字符串转数组 */
+        let str = 'adsafdsfs'
+
+        console.log(str.split(' ')) // ["adsafdsfs"] 此方法无法将所有字符单独作为一个数组项
+
+        let strArr = []
+        // 循环转换
+        for (const s of str) {
+            strArr.push(s)
+        }
+        console.log(strArr) // ["a", "d", "s", "a", "f", "d", "s", "f", "s"]
+
+        // 新写法 简单明了
+        console.log([...str]) // ["a", "d", "s", "a", "f", "d", "s", "f", "s"]
+
+        /* 类数组对象转为真数组 */
+
+        // 此函数用于创建节点元素
+        function creatEls(n, el) {
+            let txtArea = document.createDocumentFragment()
+            for (let i = 0; i < n; i++) {
+                txtArea.appendChild(document.createElement(el))
+            }
+            return txtArea
+        }
+
+        // 获取元素类数组对象
+        document.querySelector('body').appendChild(creatEls(5, 'div'))
+        let divs = document.querySelectorAll('div')
+        let divArr = [...divs] // 将类数组转化为真数组 继承真数组的原型方法
+        divArr.forEach((item) => {
+            item.innerHTML = '你好，我是div'
+        })
+    </script>
+</body>
+
+</html>

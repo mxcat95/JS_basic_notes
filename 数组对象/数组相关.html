@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数组相关</title>
+</head>
+
+<body>
+
+    <script>
+        /* 
+            数组：保存数据的序列，ECMA规定数组的大小可以动态调整
+                建立方法：
+                    构造函数：
+                        new Array() 空数组
+                        new Array(10) 长度为10的数组
+                        new Array('red','blue') 初始化的数组
+                    数组字面量：
+                        let arr = [1,2,'red',...] 最后一项不要为空，否则可能会解析歧义
+                    特殊情况：
+                        假设初始化数组长度为a,修改数组长度为b，则：
+                            a = b: 输出所有项目
+                            a > b: 输出b项，多余项删除
+                            a < b: 输出b项,不够的用empty补充上
+                    数组的检测：
+                        数组项 instanceof Array 返回布尔值
+                        Array.isArray(数组名) 返回布尔值
+                    数组的队列操作：
+                        push(项目): 新增一项
+                        shift(): 删除第一项
+                        unshift(项目): 新增第一项
+                        pop(): 删除最后一项 返回被删除的项
+                    高级方法：
+                        重排序：
+                            不管算法是啥，都按照返回参数排序
+                                -1：往前靠
+                                 1：往后靠
+                                 0：随意交换
+                            reverse(): 倒序 改变原数组
+                            sort(): 按照字符顺序进行排列 对于数值，先比较高位，高位小则优先排列,
+                                    相同高位比较下一位，小的优先，以此类推
+                                    sort(function (v1,v2){}) 比较函数，将乱序按照从小到大/大到小顺序排列
+                            concat('项',数组名,...): 数组拼接 不会改变原数组 只会创建新数组
+                            slice(开始位置,结束位置): 切片 不会影响原始数组
+                                切片区间： () 不切片
+                                         (a) [a,最后一项]
+                                         (a,b) [a,b) 不包括b项
+                            splice: (拼接) 最强大的功能 会影响原数组
+                                主要功能：
+                                    删除：splice(起始位置,需要删除的项的数目)
+                                    插入：splice(起始位置,0,要插入的项)
+                                    替换：splice(起始位置,要替换的项的数目,要替换的项)
+                            join: 将数组元素拼接成一个字符串
+                            位置方法：
+                                indexOf(要查找的项,查找起点位置索引): 顺序查找
+                                lastIndexOf(要查找的项,查找起点位置索引): 反向查找
+                                找不到则返回-1
+        */
+
+        let arr = [1, 2, 3, 4, 3]
+        let brr = [67, 12, 13, 5, 8]
+        brr.sort(function (v1, v2) {
+            if (v1 < v2) {
+                return -1 // 小的靠前
+            } else if (v1 > v2) {
+                return 1 // 大的靠后
+            } else {
+                return 0 // 相等则随意调换
+            }
+        })
+        console.log(brr);
+        let crr = arr.concat(brr)
+        console.log(crr);
+    </script>
+</body>
+
+</html>

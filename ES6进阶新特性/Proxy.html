@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proxy</title>
+</head>
+
+<body>
+
+    <button id="btn">proxy测试</button>
+    <script>
+        /**
+         *  Proxy: 代理器
+         *      基本概念
+         *      拦截操作列表
+         *      this问题 
+         */
+
+        // var prox = new Proxy(拦截目标,拦截行为)
+
+        /* 
+            访问者 ==> 代理人员(Proxy(代理受访对象,回避一些问题) ==> 受访对象
+            没有代理，或者不回避任何问题，就相当于直接通向受访对象
+        */
+
+        // 要使Proxy起作用 必须针对其实例进行操作
+        // 也就是当天执勤的代理人员
+
+        // 也就是说 通过代理器 可以对目标对象进行一些有限制的操作
+
+        var btn = document.querySelector('#btn')
+
+        var prox = new Proxy({}, {
+            get: function (target, property) {
+                return 35
+            }
+        })
+
+        console.log(prox.time, prox.name, prox.title) // 35*3
+
+        let proxy1 = new Proxy({
+            name: '扑克猫'
+        }, {
+            get: function (target, property, prox) {
+                return target[property] + `爱墨宝！`
+            },
+            set: function (target, property, value, prox) {
+                if (property === 'name') {
+                    target[property] = value
+                }
+            }
+        })
+
+        btn.onclick = function () {
+            btn.innerHTML = proxy1.name
+        }
+        btn.ondblclick = function () {
+            let isChg = confirm(`你确定要更改我的名字吗？`)
+            if (isChg) {
+                proxy1.name = prompt(`你想让我叫啥？`)
+            }
+        }
+
+        // 如果没有设置任何拦截
+
+        var t = {},
+            h = {}
+        var p = new Proxy(t, h)
+        p.a = 'b'
+        console.log(t, h, p) // 等同于原对象
+
+        // Proxy实例也可作为其他对象的原型对象
+
+        let obj = Object.create(p)
+        console.log(obj)
+
+        // 拦截操作列表
+        // get操作：用于拦截某个属性的读取操作
+
+        // get(目标，属性，Proxy实例本身(可选))
+        // get方法可继承
+
+        var person = {
+            name: '张三'
+        }
+
+        var zh = new Proxy(person, {
+            get: function (t, p) {
+                if (p in t) {
+                    // 有属性就直接返回
+                    return t[p]
+                }
+                throw new ReferenceError(`属性${p}不存在！`)
+            }
+        })
+
+        try {
+            console.log(zh.name) // 张三
+            console.log(zh.age) // 报错
+        } catch (e) {
+            console.log(e)
+        }
+
+        // 继承性
+        var proto = new Proxy({}, {
+            get: function (t, p, r) {
+
+                console.log(`GET ${p}`)
+                return t[p]
+            }
+        })
+
+        let foo = Object.create(proto)
+        foo.name // GET name
+
+        // get 经典链式操作
+
+        function pipe(v) {
+            // 将函数都存放到数组中
+            var fnStack = []
+
+            // 使用代理实现链式操作
+            var op = new Proxy({}, {
+                get: function (pipeObj, fnName) {
+
+                    // console.log(fnName)
+
+                    // 等到函数全部存放完毕
+                    if (fnName === 'get') {
+                        return fnStack.reduce((val, fn) => {
+                            // 后一个函数的参数就是前一个函数的执行结果
+                            // console.log(v, val, fn)
+                            return fn(val)
+                        }, v)
+                    }
+                    // 函数推入数组
+                    fnStack.push(window[fnName])
+
+                    // console.log(fnStack)
+                    return op
+                }
+            })
+
+            // console.log(op)
+            return op
+        }
+
+        // 翻倍
+        var double = n => n * 2
+        // 平方
+        var pow = n => n ** 2
+        // 倒序
+        var reverseInt = n => n.toString().split("").reverse().join("") * 1
+
+        console.log(pipe(9).double.pow.reverseInt.get) // 423
+
+        // 顺便写个倒序算法
+        function daoXu(n) {
+            let m = 0
+            while (n > 0) {
+                m = m * 10 + n % 10 // 倒序还原
+                n = Math.floor(n / 10) // 向下取整
+            }
+            return m
+        }
+        console.log(pipe(9).double.pow.reverseInt.daoXu.get) // 324
+
+        /* 
+            set操作：拦截某个属性的赋值操作
+                四个参数：
+                    1.目标对象
+                    2.属性名
+                    3.属性值
+                    4.Proxy实例本身(可选)
+                一般用于对要赋值的数进行过滤，加工或是权限设置
+
+        */
+
+        let person1 = new Proxy({}, {
+            set: function (obj, prop, value, prox) {
+
+                if (prop === 'age') {
+                    if (!Number.isInteger(value)) {
+                        throw new TypeError(`年龄需要设为整数！`)
+                    }
+
+                    if (value > 200) {
+                        throw new RangeError(`无效年龄！`)
+                    }
+                }
+
+                obj[prop] = value
+            },
+            get: function (obj, prop) {
+                return obj[prop]
+            }
+        })
+
+        try {
+            person1.age = 100
+            person1.age = '十八'
+            person1.age = 201
+        } catch (e) {
+            console.log(e)
+        }
+
+        // 设置对象的私有属性(即不能通过外部访问的属性)
+
+        const handler = {
+            get(target, key) {
+                invariant(key, 'get')
+                return target[key]
+            },
+            set(target, key, value) {
+                invariant(key, 'set')
+                target[key] = value
+                return true
+            }
+        }
+
+        // 判定机制
+        function invariant(key, action) {
+            if (key[0] === '_') {
+                throw new Error(`无效操作：${action}， ${key}是私有属性，外部无法访问！`)
+            }
+        }
+
+        const target = {}
+
+        const pro = new Proxy(target, handler)
+
+        try {
+            pro._name // 报错
+        } catch (e) {
+            console.log(e)
+        }
+
+        try {
+            pro._name = '张三' // 报错
+        } catch (e) {
+            console.log(e)
+        }
+
+        // 在严格模式下 set代理如果没有返回true 就会报错
+
+        // 其他方法
+
+        // apply(target,obj,args)
+        // 目标对象 目标对象的上下文对象(this) 目标对象的参数数组
+        // 拦截Proxy实例作为函数调用的操作
+
+        var t = function () {
+            return `我是目标对象！`
+        }
+        var h = {
+            apply: function () {
+                return `我是代理！`
+            }
+        }
+
+        var pp = new Proxy(t, h)
+        console.log(pp())
+
+        // has(target,prop)
+        // 目标对象 想查询的属性名
+        // 拦截Proxy实例hasProperty操作
+
+        var hd = {
+            has(target, key) {
+                if (key[0] === '_') {
+                    return false
+                }
+                return key in target
+            },
+
+            // deleteProperty 拦截属性删除操作
+            deleteProperty(target, key) {
+                if (key[0] === '_') {
+                    throw new Error('私有属性，无权操作！')
+                }
+                delete target[key]
+                return true
+            },
+
+            // 拦截属性设置的操作 无法设置新属性
+            defineProperty(target, key, descripitor) {
+                throw new Error('该操作已被拦截!无法添加新属性！')
+                return false
+            },
+
+            // 拦截属性描述
+            getOwnPropertyDescriptor(target, key, descripitor) {
+                if (key[0] === '_') {
+                    return
+                }
+                return Object.getOwnPropertyDescriptor(target, key)
+            },
+            // 拦截获取对象的原型
+            getPrototypeOf(target) {
+                return proto
+            },
+            // 拦截修改对象原型的操作
+            setPrototypeOf(target, proto) {
+                throw new Error('禁止修改对象原型！')
+            },
+            // 拦截对象扩展操作
+            isExtensible(target) {
+                console.log('called')
+                // 返回值必须跟目标对象保持一致 否则会报错
+                return true
+            },
+            // 拦截 阻止对象扩展操作 只有目标对象不可扩展才会返回true
+            preventExtensions(target) {
+                return true
+            },
+            // 拦截对象自身属性的读取操作
+            ownKeys(target) {
+                // 返回值的数组成员 只能是字符串或者Symbol类型 其他均会报错
+                // 如果目标对象本身就有不可配置的属性 必须将其返回 否则报错
+                // 如果目标对象不可扩展 则必须返回包含源对象的所有属性，且不能包含多余的属性
+                return ['a', 'd', Symbol.for('secret'), 'key']
+            }
+        }
+
+        var tar = {
+            _prop: 'foo',
+            pro: 'foo'
+        }
+
+        var proxt = new Proxy(tar, hd)
+        console.log('_prop' in proxt)
+
+        try {
+            console.log(delete proxt._prop)
+        } catch (error) {
+            console.log(error)
+        }
+
+        try {
+            proxt.age = 15
+        } catch (error) {
+            console.log(error)
+        }
+
+        console.log(Object.getOwnPropertyDescriptor(proxt, '_prop'))
+        console.log(Object.getOwnPropertyDescriptor(proxt, 'pro'))
+        console.log(Object.getPrototypeOf(proxt) === proto)
+
+        Object.isExtensible(proxt)
+
+        let targeter = {
+            a: 1,
+            b: 2,
+            c: 3,
+            [Symbol.for('secret')]: 4
+        }
+
+        Object.defineProperty(target, 'key', {
+            enumerable: false,
+            configurable: true,
+            writable: true,
+            value: 'static'
+        })
+
+        let proxz = new Proxy(targeter, hd)
+
+        console.log(Object.keys(proxz)) // ['a'] 不存在的属性、Symbol属性和不可遍历属性都过滤了
+
+        // Proxy.revocable 取消Proxy实例 
+        // 使用场景： 目标对象不允许直接访问 需要使用代理 访问结束收回代理权 不允许再次访问
+
+        let ttt = {}
+        let hhh = {}
+
+        let {
+            proxy,
+            revoke
+        } = Proxy.revocable(ttt, hhh)
+
+        proxy.foo = 123
+        console.log(proxy.foo)
+        revoke()
+        try {
+            console.log(proxy.floor)
+        } catch (e) {
+            console.log(e)
+        }
+
+        /**
+         * Proxy的this问题
+         */
+
+        // 一旦代理器代理目标对象 则this指向代理器 会出现取值异常的情况
+
+        const llal = {
+
+            m() {
+                console.log(this)
+            }
+        }
+
+        const lkk = {}
+
+        const dshaj = new Proxy(llal, lkk)
+
+        llal.m() // 指向llal
+        dshaj.m() // 指向Proxy对象
+
+        const _nan = new WeakMap()
+
+        class Person {
+            constructor(name) {
+                _nan.set(this, name)
+            }
+            get name() {
+                return _nan.get(this)
+            }
+        }
+
+        const jane = new Person('Jane')
+        console.log(jane.name) // Jane
+
+        const prpr = new Proxy(jane, {})
+        console.log(prpr.name) // undefined
+
+        // 有些原生对象的内部属性 只有通过正确的this才能拿到 Proxy无权代理
+        // 解决方式 手动绑定this
+
+        const date = new Date()
+        const proDate = new Proxy(date, {})
+        try {
+            console.log(proDate.getDate()) // 无权访问
+        } catch (error) {
+            console.log(error)
+        }
+
+        // 手动绑定this
+
+        const date1 = new Date('2021-06-01')
+
+        const dateHd = {
+            get(target, key) {
+                if (key === 'getDate') {
+                    return target.getDate.bind(target) // 绑定this到目标对象
+                }
+                return Reflect.get(target, key)
+            }
+        }
+
+        const proDate1 = new Proxy(date1, dateHd)
+
+        console.log(proDate1.getDate()) // 1
+
+        // construct(target,args) 用于拦截new 命令
+
+        let ne = new Proxy(function () {}, {
+            // 对调用构造函数的拦截
+            construct(target, args) {
+                console.log('called' + args.join(', '))
+                return {
+                    value: args[0] * 10
+                }
+            }
+        })
+        console.log(new ne(1).value) // 10
+    </script>
+</body>
+
+</html>

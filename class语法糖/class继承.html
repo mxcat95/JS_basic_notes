@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>class的继承</title>
+</head>
+<body>
+<script src="../js封装/Mixin.js"></script>
+<script>
+    /*
+        class的继承
+            extends
+            super关键字
+            Mixin模式
+    */
+
+    // extends 继承父类的所有属性和方法 同时又prototype属性和__proto__属性 同时存在两条继承连
+    // 子类的__proto__属性指向父类，继承构造函数
+    // 子类的prototype属性的__proto__属性，总是指向父类prototype属性，继承方法
+
+    class A {
+    }
+
+    class B extends A {
+    }
+
+    console.log(B.__proto__) // class A
+    console.log(B.prototype)
+    console.log(B.prototype.__proto__ === A.prototype) // true
+
+    // 子类必须在构造器中调用super方法，否则得不到this对象
+    // 父类
+    class Point {
+        constructor(x, y) {
+            this.x = x
+            this.y = y
+        }
+
+        sayName(name) {
+            console.log(name)
+        }
+    }
+
+    // 子类
+    class ColorPoint extends Point {
+        constructor(x, y, z) {
+            super(x, y)
+            this.z = z
+        }
+
+        sayHello() {
+            console.log('Hello!')
+        }
+    }
+
+    let o1 = new Point(1, 2)
+    let o2 = new ColorPoint(1, 2, 3)
+
+    // 关于继承实例创造中super的调用问题
+    // ES5 先创造子类实例对象this 再将父类的方法添加到this上面
+    // ES6 先添加到this上(必须使用super) 再用子类的构造函数修改this
+
+    // ES5继承
+    function Fa(x) {
+        this.x = x
+    }
+
+    Fa.prototype.sayName = function () {
+        return this.x
+    }
+
+    function Son(x, y) {
+        Fa.call(this, x) // 继承属性
+        this.y = y
+    }
+
+    Son.prototype = new Fa() // 继承原型方法
+    let son = new Son(1, 2)
+
+    // ES6 super只会运行在构造器中 不管继承类有没有显示定义构造器 都会被默认添加
+    // 必须先使用super获得this对象 才能继续添加自有属性
+    // 父类的静态方法也会被子类继承
+
+    class Pet {
+        constructor(w, h) {
+            this.w = w
+            this.h = h
+        }
+
+        breaking(voice) {
+            console.log(voice)
+        }
+
+        static eat(who, action) {
+            console.log(`${who}在${action}的吃肉！`)
+        }
+    }
+
+    class Dog extends Pet {
+        constructor(w, h, chi) {
+            super(w, h);
+            this.chi = chi
+        }
+
+        fly() {
+            console.log(`本狗使用了${this.chi}进行飞翔！`)
+        }
+    }
+
+    let dog = new Dog(12, 60, '无敌旋风翼')
+    dog.fly()
+    Dog.eat('dog', '吧唧吧唧')
+
+    // super 关键字详解
+    /*
+        两种情况：
+            1.当做函数
+                只能用在子类的构造函数中 返回子类的实例 this指向子类的实例
+                也就是说 通过super对某个属性赋值 会变成子类的实例属性
+            2.当做对象
+                普通方法中 指向父类的原型对象
+                静态方法中 指向父类 定义在父类实例(构造器内部)的属性和方法无法通过super调用
+                    调用时 指向父类而非父类的原型 this指向当前子类而非子类实例
+    */
+
+    class Sup {
+        p() {
+            return 2
+        }
+    }
+
+    class Sub extends Sup {
+        constructor() {
+            super() // 作为构造函数用
+            console.log(super.p()) // 作为对象使用 2
+        }
+    }
+
+    let sub = new Sub()
+
+    class Parent {
+        constructor() {
+            this.x = 1
+        }
+
+        static print() {
+            console.log(this.x)
+        }
+
+        // 静态方法
+        static myMethod(msg) {
+            console.log('static', msg)
+        }
+
+        // 公有方法
+        myMethod(msg) {
+            console.log('instance', msg)
+        }
+    }
+
+    class Child extends Parent {
+        constructor() {
+            super()
+            this.x = 2 // 指向子类
+        }
+        static m(){
+            super.print() // 等同于Parent.print()
+        }
+
+        // 静态方法
+        static myMethod(msg) {
+            super.myMethod(msg) // 指向父类
+        }
+
+        // 公有方法
+        myMethod(msg) {
+            super.myMethod(msg) // 指向子类
+        }
+    }
+
+    Child.myMethod(1)
+
+    let child = new Child()
+    child.myMethod(2)
+
+    Child.x = 3
+    Child.m()
+
+    // Mixin详解
+    // 指多个对象合成一个新对象 具有各个组成成员的接口
+
+    // 最简单合成方法
+    const a = {
+        a: 'a'
+    }
+
+    const b = {
+        b:'b'
+    }
+    const c = {...a,...b}
+    // 更完备的实现
+
+    // 将Pet和Parent类的接口合并到Mixin类
+    class Mixin extends mix(Pet,Parent){
+        constructor(w,h) {
+            super()
+            this.w = w
+            this.h = h
+            this.x = 6
+        }
+        static myMethod(msg) {
+            super.myMethod(msg) // 指向父类
+        }
+        static eat(who, action) {
+            super.eat(who, action)
+        }
+    }
+    let mixin = new Mixin(32,26)
+</script>
+</body>
+</html>

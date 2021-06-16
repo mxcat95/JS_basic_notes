@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>中级</title>
+</head>
+
+<body>
+
+    <script>
+        /* 组合使用构造函数和原型 */
+
+        // 构造函数
+        function GoZao(m, n) {
+            this.a = m
+            this.b = n
+            this.arr = [3, 4, 5, 6]
+            this.add = function () {
+                return this.a + this.b
+            }
+        }
+
+        let san = new GoZao(1, 2)
+        console.log(san.arr.reduce((pre, cur, index, array) => {
+            return pre + cur
+        }, san.add()))
+
+        // 原型模式 修改引用类型会影响所有实例
+        function YuanXing() {
+
+        }
+
+        YuanXing.prototype = {
+            constructor: YuanXing,
+            a: 1,
+            b: 2,
+            arr: [3, 4, 5, 6],
+            add: function () {
+                return this.a + this.b
+            }
+        }
+        let wu = new YuanXing()
+        let wu2 = new YuanXing()
+        wu.arr.push(7)
+        console.log(wu.arr.reduce((pre, cur, index, array) => {
+            return pre + cur
+        }, wu.add()))
+
+        console.log(wu2.arr.reduce((pre, cur, index, array) => {
+            return pre + cur
+        }, wu.add()))
+
+        // 混合模式 最佳方案 解决引用类型的问题
+        function HunHe(m, n) {
+            this.a = m
+            this.b = n
+            this.arr = [3, 4, 5, 6]
+        }
+
+        HunHe.prototype.add = function () {
+            return this.a + this.b
+        }
+
+        let hun = new HunHe(1, 2)
+        let hun1 = new HunHe(1, 2)
+        hun.arr.push(7)
+        console.log(hun.arr.reduce((pre, cur, index, array) => {
+            return pre + cur
+        }, hun.add()))
+
+        console.log(hun1.arr.reduce((pre, cur, index, array) => {
+            return pre + cur
+        }, hun1.add()))
+
+        /* 动态原型模式 */
+        function DongTai() {
+            this.a = 1
+            this.b = 2
+            if (typeof this.add !== 'function') {
+                // 不能用对象字面量的方式创建
+                DongTai.prototype.add = function () {
+                    return this.a + this.b
+                }
+            }
+        }
+
+        let dong = new DongTai()
+        let dong1 = new DongTai()
+
+        /* 寄生构造模式，本质上和工厂模式一样 */
+        function JiShen(m, n) {
+            let o = new Object()
+            o.a = m
+            o.b = n
+            o.add = function () {
+                return o.a + o.b
+            }
+            return o
+        }
+
+        let ji = new JiShen(1, 2)
+        console.log(ji instanceof Object)
+        // 此模式只适用于需要扩展某些对象的额外功能时使用，可避免直接操作原生对象带来的重名冲突
+        // 缺点 返回的对象与构造函数和原型属性之间没有关系，也就是说，这种方法跟外部创建的对象没有任何区别
+        // 无法用instanceof 操作符来判别对象类型 在能使用其他模式的情况下 不建议使用此模式
+
+        /* 稳妥构造模式 和闭包类似 也类似于java的private修饰符 */
+        // 此模式不使用this和new来指向
+        function WenTuo(name, age) {
+            var a = new Array()
+            a.sayName = function () {
+                console.log(name)
+            }
+            a.sayAge = function () {
+                console.log(age)
+            }
+            return a
+        }
+
+        let wen = WenTuo('墨宝', 15)
+
+        /* 原型链 */
+        // 基本概念 一个实例的原型可以指向另一个对象的实例，可以无限嵌套
+        // 即一个对象的原型可以指向另一个对象的原型 完成属性和方法的继承
+        function Ye() {
+            this.age = 120
+        }
+
+        Ye.prototype = {
+            constructor: Ye,
+            location: '云南',
+            sayAge: function () {
+
+                console.log(this.age)
+            }
+        }
+
+        function Ba(name) {
+            this.name = name
+        }
+
+        Ba.prototype = new Ye()
+        // 实例继承，能保证Ba对象属性和方法的私有性，也不会对继承类的原型造成影响
+        // Ba.prototype = Ye.prototype  这是一种危险的继承写法
+
+        Ba.prototype.sayName = function () {
+            console.log(this.name)
+        }
+        // 通过原型链继承的时候不能用对象字面量 否则会重写原型 覆盖上面的赋值操作
+        // Ba.prototype = {
+        //     sex:'男'
+        // }
+        let son = new Ba('墨杉')
+    </script>
+</body>
+
+</html>

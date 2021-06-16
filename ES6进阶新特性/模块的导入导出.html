@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模块的导入导出</title>
+</head>
+
+<body>
+    <script>
+        /* 
+            module:
+               早期，js并不支持模块化开发
+               ES6引入了模块的概念 使得开发大型项目能够化繁为简 化整为零 简化开发难度    
+        */
+
+        // ES5 CommonJs模块 本身就是个对象 使用时必须查找其属性
+        // let {stat,exists,readFile} = require('fs')
+
+        // 等同于
+        // let _fs = require('fs')
+        // let stat = _fs.stat,exists = _fs.exists,readFile = _fs.readFile
+
+        // 这种写法 需要把整体加载fs模块 生成一个对象 然后再从该对象上读取3个方法
+        // 成为“运行时加载” 只有运行时才能得到该对象 导致完全没法在编译的时候做静态优化
+
+        // ES6 模块 非对象 而是通过export命令 显示指定输出的代码 在通过import导入
+
+        // import { stat,exists,readFile  } from "fs" 
+        // 实质上是从fs模块加载3个方法 其他方法不加载 即为“编译加载” 效率比es5模块高
+        // 当然 也导致了没法引用ES6 模块本身 因为它不是对象
+
+        // 模块功能 由两个命令构成：export 和 import
+        // export 用于规定对外的接口 import 用于导入其他模块提供的功能
+
+        // 一个模块就是一个独立的文件 该文件的内部变量 外部无法获取 必须通过export导出才能被访问到
+
+        // 模块加载：
+        // import 加载模块 import module as newModule 重命名模块
+        // 导入的模块 只读 不可改写
+        // import 指令的优先级高于函数优先级 具有指令提升的效果
+        // import xx from '模块所在的位置 / 单纯的模块' 如果是单纯的模块 必须配置其解析路径
+
+        // 整体加载 export * as 新模块名 from '模块'
+
+        // 为了给用户提供方便 让其不阅读文档就能加载模块 就需要用到export default命令
+
+        // 模块的继承 通过复合写法来转发多个接口 让多个文件共享同一个常量
+
+        // import 缺憾
+        // import语句会被JavaScript引擎静态分析 先于其他语句执行
+        // 也就是说 当前import 和 export 只能在程序顶部 不能在代码块当中
+        // 这就导致了其无法在运行时加载模块 通常会出现跨域的问题
+        // 暂时无法取代node中的require方法
+
+        // ES6模块 允许内嵌在网页中 语法行为与加载外部脚本一致
+
+
+        /* 
+            外部模块注意点：
+                1.模块内的代码 仅限于模块作用域 而非全局 其内部顶层变量 外部不可见
+                2.模块脚本自动采用严格模式
+                3.模块之中可以嵌套其他模块 也可以对外输出和转发接口
+                4.模块顶层使用this 没有意义 不会指向window 而是返回undefined
+                5.同一个模块加载多次 只会执行一次
+        */
+    </script>
+
+    <script src="./模块测试/js/demo.js" type="module">
+        // type类型必须指定module
+    </script>
+
+    <script type="module">
+        // 可在网页导入模块
+        import { db, user } from './模块测试/constants/index.js'
+        console.log(user[3]) // ceo
+    </script>
+
+    <script>
+        // 上述写法 直接在页面中导入模块 普通方法运行 会出现跨域的问题 无法正常运行
+        // 通过socket转发 实时运行 即可 也就是VScode的插件 Open with Live Sever
+
+        // 上述引用等同于
+
+        function add(...nums) {
+            let sum = nums.reduce((pre, next) => {
+                return pre + next
+            })
+            return sum
+        }
+
+        console.log(add(1, 2, 3, 4, 5)); // 15
+    </script>
+
+    <script src="./模块测试/constants/script.js" type="module"></script>
+</body>
+
+</html>

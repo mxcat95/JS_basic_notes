@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Map数据结构</title>
+</head>
+
+<body>
+
+    <div id="box">111</div>
+    <button id="btn">点我吧</button>
+    <script>
+        // Object 提供了" 字符串 <===> 值 " 对应
+        // Map 提供了" 值 <===> 值 " 对应 是一种更完善的hash结构
+
+        const m = new Map() // 创建
+        const o = {
+            p: "你好Map"
+        }
+
+        m.set(o, 'content') // 设置方法
+        console.log(m.size) // 长度
+        m.get(o) // 获取方法
+        m.has(o) // 判断方法
+        m.delete(o) // 删除方法
+        m.clear() // 清除所有成员
+
+        // Map作为构造函数 可接受一个表示键值对集合的数组为参数
+        const book = new Map([
+            ['作者', '张三'],
+            ['书名', '张三回忆录']
+        ])
+
+        book.get('作者') // 张三
+
+        // 上述操作等同于下述算法
+
+        const map = new Map()
+        book.forEach(([key, value]) => map.set(key, value))
+
+        // 任何具有Iterator接口、每个成员都是一个双元素的数组 都可以当做Map的参数
+        const set = new Set([
+            ['foo', 1],
+            ['bar', 2]
+        ])
+
+        const mapSet = new Map(set) // Set结构参数
+        console.log(mapSet.get('foo'))
+
+        const m2 = new Map([
+            ['baz', 12]
+        ])
+        const m3 = new Map(m2) // Map结构参数
+        console.log(m3.get('baz'))
+
+        // Map数据结构的键名是内存中的某一段数据，只有同一内存地址的同一个数据才能当做是同一个键名
+        // 也就是说，两个键名相同，对应的值不一定相同，也就是两个不同的键
+        // 如果键名是基础类型，只要两个类型严格相等，则就认为是同一个键
+        const k1 = ['a']
+        const k2 = ['a']
+
+        m.set(k1, 11)
+        m.set(k2, 22)
+
+        console.log(m.get(k1)) // 11
+        console.log(m.get(k2)) // 22
+
+        m.set(['a'], 33)
+        console.log(m.get(['a'])) // undefined 键名地址不一样 不是同一个键
+
+        // set 返回的就是当前Map对象，所以可以这么写
+        m.set(1, 'a').set(2, 'b').set(3, 'c')
+
+        /**
+         *  遍历方法(与Set类似)
+         *  keys() 键名
+         *  values() 键值
+         *  entries() 键值对
+         *  forEach() 使用回调函数遍历 
+         */
+
+        for (let key of m.keys()) {
+            console.log(key)
+        }
+
+        for (let value of m.values()) {
+            console.log(value)
+        }
+        // entries()可省略
+        for (let [key, value] of m) {
+            console.log(key, value)
+        }
+
+        // Map的遍历顺序就是插入顺序 即先从值开始遍历
+        m.forEach((value, key) => console.log(key + ': ' + value))
+
+        // 转化为数组结构
+        const newMap = new Map([
+            [1, 'one'],
+            [2, 'two'],
+            [3, 'three']
+        ])
+
+        // 扩展运算符
+        console.log([...newMap].flat()) // 降维
+
+        // 调用数组的方法
+
+        const n1 = new Map([...newMap].filter(([key, value]) => key < 3))
+        const n2 = new Map([...newMap].map(([k, v]) => [k * 2, '_' + v]))
+        console.log([...n1].flat(), [...n2].flat())
+
+        newMap.forEach(function (v, k, m) {
+            console.log(k, v)
+        })
+        // forEach还可以有第二个参数，用于绑定this
+
+        const reporter = {
+            report: function (key, value) {
+                console.log(key, value)
+            }
+        }
+
+        newMap.forEach(function (v, k, m) {
+            this.report(k, v)
+        }, reporter)
+
+        // 与其他数据类型的转换
+
+        // 数组
+        // [...map] <==> new Map([[x,y],[1,2]])
+
+        // 对象 如果Map键名和键值都是字符串，则无损转化为对象 有非字符串的键名 则先转化为字符串
+
+        // 字符串Map转为对象
+        function strMapToObj(strMap) {
+            let obj = Object.create(null)
+            for (let [k, v] of strMap) {
+                obj[k] = v
+            }
+            return obj
+        }
+
+        const strMap = new Map().set('yes', true).set('no', false)
+        console.log(strMapToObj(strMap))
+
+        // 对象转为Map结构
+        function objToStrMap(obj) {
+            let strM = new Map()
+            for (const k of Object.keys(obj)) {
+                strM.set(k, obj[k])
+            }
+            return strM
+        }
+        const obj = {
+            'name': '张飞',
+            '籍贯': '蜀国'
+        }
+
+        console.log(objToStrMap(obj))
+
+        // WeakMap 弱Map 区别：
+        // 键名只接受对象(null除外)
+        // 键名对象不计入垃圾回收机制
+
+        // API的区别：没有遍历方法 无法清空 只有get,set,has,delete四个方法
+
+        const wm1 = new WeakMap()
+        const key = {
+            'foo': 1
+        }
+        wm1.set(key, 2)
+        console.log(wm1.get(key)) // 2
+
+        // 也可以接受一个数组作为构造参数
+        const arr1 = [1, 2, 3]
+        const arr2 = [4, 5, 6]
+
+        const wm2 = new WeakMap([
+            [arr1, '来吧'],
+            [arr2, '好吧']
+        ])
+
+        console.log(wm2.get(arr1))
+
+        // WeakMap的设计目的在于，让垃圾回收机制自动删除不再需要的对象引用
+        // 如果想在对象上添加数据，又不想影响垃圾回收机制 可以使用WeakMap
+
+        // 典型应用场景 想在DOM元素上添加数据 当DOM元被清除，对应的WM记录也被清除
+
+        const wmdom = new WeakMap()
+
+        const el = document.getElementById('box')
+
+        wmdom.set(el, '这是一个div')
+        console.log(wmdom.get(el))
+
+        // 专用场合 其键所对应的对象 在将来可能会消失 有助于防止内存泄露
+
+        let btn = document.getElementById('btn')
+        let wmd = new WeakMap()
+
+        wmd.set(btn, {
+            timesClicked: 0
+        })
+
+        btn.addEventListener('click', function () {
+            let logoData = wmd.get(btn)
+            logoData.timesClicked++
+            btn.innerHTML = logoData.timesClicked
+        }, false)
+        // btn.remove() 删除DOM节点 不会内存泄露
+
+        // 另一个场景： 部署私有属性
+        const _conunter = new WeakMap()
+        const _action = new WeakMap()
+
+        class CountDown {
+            constructor(counter, action) {
+                _conunter.set(this, counter) // 私有化对象属性
+                _action.set(this, action)
+            }
+            dec() {
+                let counter = _conunter.get(this)
+
+                if (counter < 1) return
+
+                counter--;
+                _conunter.set(this, counter)
+
+                if (counter === 0) {
+                    _action.get(this)()
+                }
+            }
+        }
+        const c = new CountDown(3, () => console.log('DONE'))
+        c.dec()
+        c.dec()
+        c.dec()
+    </script>
+</body>
+
+</html>

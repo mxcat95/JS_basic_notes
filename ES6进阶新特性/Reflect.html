@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reflect</title>
+</head>
+
+<body>
+
+    <script>
+        var {
+            log
+        } = console
+        // Reflect对象 类似于Math对象一样 没有构造函数 是ES6新的API 属于全局对象 提供静态API
+        // Reflect 共有13个静态方法
+
+        // 1.get(target,name,receiver)
+        //      查找并返回目标对象的属性 没有则返回undefined
+        //      第一个参数不是对象 会报错
+
+        let obj = {
+            name: '大帅',
+            age: 18,
+            // 部署getter读取函数
+            get msg() {
+                // this返回Reflect.get的receiver参数对象
+                console.log(this.name + this.age)
+            },
+
+            // 部署setter写入函数
+            set bar(value) {
+                console.log('设置成功！')
+                // this绑定receiver对象
+                return this.name = value
+            }
+        }
+
+        let receiver = {
+            name: '猫头',
+            age: 25
+        }
+
+        Reflect.get(obj, "msg") // 大帅18
+        Reflect.get(obj, "msg", receiver) // 猫头25
+
+        // 2.set(target,name,value,receiver)
+        //      设置目标对象的属性值
+
+        Reflect.set(obj, 'bar', '小宝') // 设置成功
+        Reflect.get(obj, "msg") // 小宝18
+
+        Reflect.set(obj, 'bar', '大宝', receiver) // 设置成功
+        Reflect.get(obj, "msg", receiver) // 大宝18
+
+        // 注意 如果Proxy对象和Reflect对象联合使用
+        // 前者拦截赋值操作 后者完成默认行为
+        // 且传入接收对象 Reflect.set会触发Proxy.defineProerty拦截
+
+        let handler = {
+            set(target, key, value, receiver) {
+                console.log('set操作！')
+                Reflect.set(target, key, value, receiver)
+            },
+            defineProperty(target, key, attribute) {
+                // 先拦截 过滤
+                console.log('触发defineProperty操作！')
+                // 再赋值
+                return Reflect.defineProperty(target, key, attribute)
+            }
+        }
+
+        let {
+            proxy,
+            revoke
+        } = Proxy.revocable(obj, handler)
+        proxy.name = '不慌'
+        Reflect.get(proxy, 'msg') // 不慌18
+        revoke() // 关闭代理
+
+        // 3.has(obj,name) 对应 name in obj 的in运算符
+        let myObj = {
+            foo: 1
+        }
+
+        // 旧写法
+        console.log('foo' in myObj)
+
+        // 新写法
+        console.log(Reflect.has(myObj, 'foo'))
+
+        // 4.defineProperty(target,propertyKey,attributes)
+        //      为对象定义属性 基本等同于Object.defineProperty
+        //      后者可能会被废除 使用Reflect替代
+        // 结合Proxy.defineProperty使用最佳
+
+        // 5.deleteProperty(target,name)
+        //      删除对象属性 等同于delete target[name]
+
+        // 旧写法
+        console.log(delete myObj.foo)
+
+        // 新写法
+        console.log(Reflect.deleteProperty(myObj, 'foo'))
+
+        // 6.construct(target,args)
+        //      等同于new target(...args)
+        //      提供了一种不使用new 来调用构造函数的方法
+
+        function Greeting(name) {
+            this.msg = `${name}欢迎您的到来！`
+        }
+
+        // 旧写法
+        log(new Greeting("饿了么").msg)
+
+        // 新写法
+        console.log(Reflect.construct(Greeting, ['美团']).msg)
+
+        // 7.getPropertyOf(target)
+        //      对应Object.getPropertyOf()
+        //      读取对象__proto__属性
+
+        let wel = Reflect.construct(Greeting, ['银联'])
+        // 旧写法
+
+        log(Object.getPrototypeOf(wel) === Greeting.prototype)
+
+        // 新写法
+        log(Reflect.getPrototypeOf(wel) === Greeting.prototype)
+
+        // 8.setPropertyOf(target,newProto)
+        //      对应Object.setPropertyOf()
+        //      设置对象的原型 成功返回true 失败返回false
+
+        // 旧写法
+        log(Object.setPrototypeOf(wel, Array.prototype))
+
+        // 新写法
+        log(Reflect.setPrototypeOf(wel, Array.prototype))
+
+        log(wel.length) // 0
+
+        // 9.apply(fn,thisArg,args)
+        //      对应Function.prototype.apply.call()
+        //      用于绑定this对象后执行给定函数
+
+        const args = [11, 22, 33, 44, 55, 66]
+        // 旧写法
+        const min = Math.min.apply(Math, args)
+        const max = Math.max.apply(Math, args)
+        const type = Object.prototype.toString.call(min)
+
+        // 新写法
+        const minr = Reflect.apply(Math.min, Math, args)
+        const maxr = Reflect.apply(Math.max, Math, args)
+        const typer = Reflect.apply(Object.prototype.toString, minr, [])
+
+        // 10.getOwnPropertyDescriptor(target,propertyKey)
+        //      对应Object.getOwnPropertyDescriptor()
+        //      获取指定属性的描述对象 将来会成为主流
+
+        let myOb = {}
+        Object.defineProperty(myOb, 'hidden', {
+            value: true,
+            enumerable: false
+        })
+
+        // 旧写法
+        log(Object.getOwnPropertyDescriptor(myOb, 'hidden'))
+
+        // 新写法
+        log(Reflect.getOwnPropertyDescriptor(myOb, 'hidden'))
+
+        // 11.isExtensible(target)
+        //      对应Object.isExtensible()
+        //      表示当前对象是否可扩展
+
+        // 旧写法
+        log(Object.isExtensible(myOb)) // true
+
+        // 新写法
+        log(Reflect.isExtensible(myOb)) // true
+
+        // 12.preventExtensions(target)
+        //      对应Object.preventExtensions()
+        //      让目标对象是不可扩展
+
+        // 旧写法
+        log(Object.preventExtensions(myOb)) // true
+
+        // 新写法
+        log(Reflect.preventExtensions(myOb)) // true
+        log(Reflect.isExtensible(myOb)) // false
+
+        // 13.ownKeys(target)
+        //      对应Object.(getOwnPropertyNames + getOwnPropertySymbol)()
+        //      获取自身属性 包括Symbol属性
+
+        let symbol = {
+            foo: 1,
+            bar: 2,
+            [Symbol.for('baz')]: 3,
+            [Symbol.for('bing')]: 4
+        }
+
+        // 旧写法
+        log(Object.getOwnPropertyNames(symbol))
+        log(Object.getOwnPropertySymbols(symbol))
+
+        // 新写法
+        log(Reflect.ownKeys(symbol)) // 新写法更加便捷
+
+        /**
+         * 核心总结：
+         *      1.将Object对象的一些内部方法放到Reflect对象上，
+         *        将来也许只会部署到Reflect对象上 来替代Object
+         *      2.修改某些Object方法的返回值 让其变得更合理
+         *      3.让Object操作都变为函数式 比如 name in obj
+         *          变为Reflect.has(obj,name)
+         *      4.与Proxy对象的方法一一对应，只要Proxy对象存在，
+         *          就能在Reflect对象上找到对应方法
+         *          也就是说，可以先过滤，再操作 
+         */
+
+        let hand = {
+            defineProperty(target, key, attribute) {
+                return false
+            }
+        }
+
+        let prox = new Proxy(symbol, hand)
+        // 旧写法
+        try {
+            Object.defineProperty(prox, 'foo', {
+                value: 6
+            }) // 无法设置就报错
+        } catch (e) {
+            log(e)
+        }
+
+        // 新写法
+        if (Reflect.defineProperty(prox, 'foo', {
+                value: 6
+            })) {
+            log('y')
+        } else {
+            log('n') // 无法设置就返回false
+        }
+
+        new Proxy(symbol, {
+            set(t, k, v, rer) {
+                var success = Reflect.set(t, k, v, rer)
+                if (success) {
+                    log('属性' + k + '设置为' + v)
+                }
+                return success
+            }
+        }).foo = 6
+
+        // 观察者模式实例
+
+        const queuedObservers = new Set()
+
+        const observe = fn => queuedObservers.add(fn)
+        const observable = obj => new Proxy(obj, {
+            set
+        })
+
+        function set(t, k, v, rer) {
+            const result = Reflect.set(t, k, v, rer)
+            queuedObservers.forEach(observer => observer())
+
+            return result
+        }
+
+        // 数据对象
+        const person = observable({
+            name: '张三',
+            age: 18
+        })
+
+        function print() {
+            log(`${person.name}\n${person.age}`)
+        }
+
+        // 观察者自动执行打印功能
+        observe(print)
+        person.name = '李四'
+    </script>
+</body>
+
+</html>

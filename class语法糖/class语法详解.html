@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>class语法详解</title>
+</head>
+
+<body>
+<script>
+    // 类是ES6引入的一种面向对象编程的语法糖，比ES5的代码简便，可读性强，也便于维护
+    // 类的数据类型就是函数 本身就指向构造函数 在类的实例上调用方法就是在调用原型上的方法
+
+    // ES5对象 构造函数
+    function Point(x, y) {
+        this.x = x
+        this.y = y
+    }
+
+    // 原型方法和属性
+    Point.prototype = {
+        constructor() {
+
+        },
+        toString() {
+            console.log('' + this.x + this.y + '')
+        },
+        toValue() {
+            console.log(this.x, this.y)
+        }
+    }
+    // 实例化以及调用方法
+    let point = new Point(1, 2)
+    point.toString()
+    point.toValue()
+
+    // ES6类对象 等同于上述写法
+    class PointX {
+        constructor(x, y) {
+            this.x = x
+            this.y = y
+        }
+
+        toString() {
+            console.log('' + this.x + this.y + '')
+        }
+
+        toValue() {
+            console.log(this.x, this.y)
+        }
+    }
+
+    let pointX = new PointX(1, 2)
+    pointX.toString()
+    pointX.toValue()
+
+    // 类的定义在prototype对象上面，所以可用Object.assign方法一次性添加多个方法
+
+    Object.assign(PointX.prototype, {
+        sayName() {
+        },
+        sayAge() {
+        }
+    })
+    console.log(new PointX(1, 2))
+
+    // 类内部定义的方法都是不可枚举的，Object.assign()方法添加的方法，除constructor，都可枚举
+
+    // 基本语法之getter和setter
+    // 跟ES5一样 可以在类的内部设置set和get关键字，对某个属性设置存取函数
+
+    class MyCount {
+        constructor() {
+            this.money = 0 // 属性
+            this.name = ''
+        }
+
+        // 取值
+        get prop() {
+            return this.money
+        }
+
+        // 存值
+        set prop(v) {
+            this.money = v
+            console.log('存款成功')
+        }
+    }
+
+    let money = new MyCount()
+
+    money.prop = 1000
+    console.log(money.prop)
+
+    // 上述写法等同于下面设置访问器属性
+    Object.defineProperty(MyCount.prototype, 'id', {
+        enumerable: false, // 不可枚举
+        configurable: true, // 可配置
+        get: function () {
+            return this.name
+        },
+        set: function (n) {
+            this.name = n
+            console.log('设置成功')
+        }
+    })
+
+    let myCount = new MyCount()
+    myCount.id = '墨杉'
+    console.log(myCount.id)
+
+    // class表达式 允许使用表达式定义类
+    const myClass = class Me {
+        getClassName() {
+            return Me.name
+        }
+    }
+
+    let inst = new myClass()
+    console.log(inst.getClassName())
+    // 如果Me内部没有使用到自身，则可以省略类名
+    // const myClass = class {}
+
+    /* 特别注意点
+            1.严格模式：在类个模块内部使用的代码均为严格模式 这是ES6对语言的一个升级
+            2.虽然类指向构造函数，但不具备声明提升的功能
+            3.函数许多特性都被class继承，包括name属性
+            4.this指向问题：
+                一般情况下，this指向与该对象本身；
+                但是，由于类的内部都是严格模式，如果将类内部的方法解构出来单独使用，
+                this会指向该方法当前的运行环境，也就是undefined！
+                解决方法：
+                    使用箭头函数！
+     */
+
+    class Logger {
+        constructor() {
+            this.printName = (name = 'there') => {
+                this.print(`Hello ${name}`)
+            }
+        }
+
+        // printName(name = 'there') {
+        //     this.print(`Hello ${name}`)
+        // }
+
+        print(text) {
+            console.log(text)
+        }
+    }
+
+    let o = new Logger()
+    o.printName() // Hello there
+
+    let {printName} = o
+    // printName() 异常 找不到print方法
+    // 在构造器中使用箭头函数，箭头函数只会运行在构造器中，所以其运行环境必定是实例对象
+    // this会总是指向实例对象
+    printName() // Hello there
+
+    // 实例属性定义规范 可以将属性定义在类的头部，看上去比较整齐，可读性高
+    class IncreasingNumber {
+        _count = 0;
+
+        get value() {
+            console.log('获取正确的值！')
+            return this._count
+        }
+
+        increment() {
+            this._count++
+        }
+    }
+
+    /*
+        class的静态属性和方法
+            静态方法：不会被实例继承的方法 可直接通过类本身来调用
+                静态方法与非静态方法可重名
+            静态属性：
+                Class本身的属性 而非定义在实例上的属性
+     */
+
+    class Foo {
+        // 静态属性
+        static num = 2
+        // 静态方法
+        static abs(v) {
+            return v > 0 ? v : -v
+        }
+        // 非静态方法
+        abs(v) {
+            return v > 0 ? -v : v
+        }
+    }
+    let foo = new Foo()
+    console.log(foo.abs(1)) // -1
+    console.log(Foo.abs(1) ) // 1
+
+    // 静态方法可以被子类继承 也可以从super对象上调用
+
+    class Fob extends Foo{
+        static abs(v) {
+            return super.abs(v) + 1
+        }
+    }
+
+    console.log(Fob.abs(-1)) // 2
+    Foo.prop = 1 // 静态属性 目前只有这种写法
+    // 但是有新的提案 加上static关键字 谷歌支持
+    console.log(Foo.prop,Foo.num) // 1 2
+
+    /*
+        私有方法和私有属性：只能在内部访问的属性和方法 有利于代码的封装
+            ES6不提供 只能模拟
+            两种方法：
+                下划线命名_privateName 不保险
+                Symbol类型的属性名 相对安全
+            目前还有一种提案 加上#符号 代表私有属性 也适用于私有方法 但是仅限于内部使用
+            也可以设置setter和getter方法
+    */
+
+    class Widget{
+        // 公有方法
+        foo(){}
+        // 私有方法
+        _bar(){}
+
+        // ...
+    }
+
+    const baf = Symbol("baf")
+    const naf = Symbol("naf")
+    class Ayn{
+        // 公有方法
+        foo(baz){
+            this[baf](baz)
+        }
+
+        // 私有方法
+        [baf](baz){
+            return this[naf] = baz
+        }
+
+        // ...
+    }
+    // 新提案
+    class Mo{
+        #count = 0
+        get value(){
+            console.log('获取正确的值！')
+            return this.#count
+        }
+        set incr(v){
+            this.#count += v
+        }
+    }
+
+    console.log(new Mo().count) // undefined
+    console.log(new Mo().value) // 0
+
+    // new.target属性 作用在构造函数中 返回new所作用的那个构造函数 没有则返回undefined
+
+    class New{
+        constructor(w,h) {
+            this.w = w
+            this.h = h
+            console.log(`${new.target === New}: ${this.h+this.w}`)
+        }
+    }
+    new New(1,2)
+
+</script>
+</body>
+
+</html>

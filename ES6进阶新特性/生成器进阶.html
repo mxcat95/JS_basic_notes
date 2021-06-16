@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生成器进阶</title>
+    <style>
+        * {
+            margin: 10px 10px;
+            border: 2px solid #000;
+        }
+    </style>
+</head>
+
+<body>
+    <header>这是网页标题</header>
+    <section>
+        这是第一个区域
+        <nav>
+            这是导航栏
+        </nav>
+        <main>
+            这是主区域
+            <article>
+                这里有一篇文章
+            </article>
+        </main>
+        <aside>
+            这是边栏
+        </aside>
+    </section>
+    <section>
+        这是第二个区域
+        <article>
+            这是第二个区域的文章
+            <figure>
+                这是文章图片
+            </figure>
+        </article>
+    </section>
+
+    <script>
+        /* 
+            生成器的进阶语法
+                throw
+                return
+                yield*
+                其它特性
+        */
+
+        // throw
+        // 生成器函数返回的遍历器对象的throw方法 可以在函数体外部抛出异常 然后在内部捕获
+
+        // 如果迭代器对象内部没有部署try catch方法 执行throw方法抛出的异常将会被外部代码捕获
+        // 如果外部也没有部署 则直接报错 函数中断执行
+
+        var g = function* () {
+            try {
+                yield
+            } catch (err) {
+                console.log(`内部捕获 ` + err) // a 外部异常 内部捕获
+            } finally {
+                console.log('里面没啥事！');
+            }
+        }
+
+        var i = g()
+        console.log(i.next()) // 必须先调用一次next 才能激活throw方法
+
+        try {
+            i.throw('a')
+            i.throw('b')
+        } catch (err) {
+            console.log(`外部捕获 ` + err) // b 
+        } finally {
+            console.log('外面也没啥事！');
+        }
+
+        // throw 启动方法 至少要执行一次next方法 先启动生成器函数内部的代码 才能执行throw方法
+
+        // throw方法执行之后 会附带执行一次next方法 与外部throw命令无关
+        function* gen() {
+            try {
+                yield console.log(1)
+            } catch (e) {
+                console.log('捕获了异常！' + e)
+            }
+
+            yield console.log(2)
+            yield console.log(3)
+        }
+
+        var genl = gen()
+        genl.next()
+        genl.throw('异常了！')
+        genl.next()
+
+        // return方法 返回给定的值(默认为undefined) 并且终结遍历
+        // 如果函数内部有try finally代码块 且正在执行try代码块
+        // return方法 推迟到 finally执行完成之后
+
+        function* ben() {
+            yield 1
+            try {
+                yield 2
+                yield 3
+            } finally {
+                yield 4
+                yield 5
+            }
+
+            yield 6
+
+        }
+
+        var bn = ben()
+        console.log(bn.next()) // 1
+        console.log(bn.next()) // 2
+        console.log(bn.return('结束了！')) // 延迟执行 结束了
+        console.log(bn.next()) // 4
+        console.log(bn.next()) // 5
+        console.log(bn.next()) // 结束了
+        console.log(bn.next()) // undefined
+
+        /* 
+            next(要替换的值，默认undefined)：
+                将上一个yield表达式替换成对应的值
+            throw(new Error('出错了！'))：
+                将yield表达式替换成一个throw语句
+            return(要替换的值,默认undefined)：
+                将yield表达式替换成一个return语句
+        */
+
+        function* test(x, y) {
+
+            var result = yield x + y
+            return result
+        }
+        const t = test(1, 2)
+        console.log(t.next()) // 3
+        console.log(t.next(1)) // 1
+
+        try {
+            console.log(t.throw(new Error('出错了！')))
+        } catch (e) {
+            console.log(e)
+        }
+
+        console.log(t.return(2)) // 2
+
+        // yield* 表达式
+        // 生成器函数内部调用另一个生成器函数 需要手动去遍历另一个函数
+
+        function* f() {
+            yield 1
+            yield 2
+        }
+
+        function* b() {
+            yield 3
+            // 手动遍历f
+            for (const i of f()) {
+                console.log(i)
+            }
+            yield 4
+        }
+
+        for (const i of b()) {
+            console.log(i) // 3 1 2 4
+        }
+        // 每次调用都要遍历一次 很麻烦
+        // 于是ES6提供了另一种方式 yield*
+
+        function* c() {
+            yield 3
+            yield* f()
+            yield*['a', 'b'] // 数组也会被直接遍历
+            yield 4
+            yield*'hi' // 凡是具备iterator接口的数据结构 都能被yield* 直接遍历
+        }
+        for (const iterator of c()) {
+            console.log(iterator) // 3 1 2 a b 4 h i
+        }
+
+        // 其他特性
+
+        let obj = {
+            // 对象属性也可以是生成器函数
+            * myGenerator() {
+                // ...
+            }
+        }
+
+        // 生成器返回的遍历器对象 是生成器函数的实例 继承了其原型对象的方法
+
+        function* j() {}
+
+        j.prototype.hello = function () {
+            console.log('hello')
+        }
+
+        j().hello() // hello
+        // 无法绑定新的this 不能作为构造函数
+        // 但是有变通法 函数的this指的是调用该函数的对象
+
+        function* F() {
+            this.a = 1
+            yield this.b = 2
+            yield this.c = 3
+        }
+        // var obp = {} // 第一步测试
+        // var ff = F.call(obp) // 绑定this对象
+
+        // 进化版 obp换成原型对象 第二步测试
+        // var ff = F.call(F.prototype) // 伪造构造函数
+
+        // 第三步测试 把一个生成器函数改成一个构造函数
+        // 即 可以用new 生成实例对象的函数
+
+        function Foo() {
+            return F.call(F.prototype)
+        }
+
+        var ff = new Foo() // 可实例化了
+
+        console.log(ff.next()) // 2
+        console.log(ff.next()) // 3
+        console.log(ff.next()) // undefined
+
+        // console.log(obp) // {a: 1, b: 2, c: 3}
+        console.log(ff.a, ff.b, ff.c) // 1 2 3
+
+        // 状态机
+        // ES5
+        var ticking = true
+        var clock = function () {
+            if (ticking) console.log('Tick!')
+            else console.log('Tock!')
+            ticking = !ticking
+        }
+
+        // 生成器状态机 更简洁优雅
+        let clocks = function* () {
+            while (true) {
+
+                yield 'Tick!'
+                yield 'Tock!'
+
+            }
+        }
+
+        let cl = clocks()
+
+        let timer = setInterval(() => {
+            // clock()
+            console.log(cl.next().value) // 通过next转换
+        }, 1000);
+
+        setTimeout(() => {
+            clearInterval(timer)
+        }, 5000)
+    </script>
+</body>
+<footer>
+    <div>网站备案号声明</div>
+</footer>
+
+</html>

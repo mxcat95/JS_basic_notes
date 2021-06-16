@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文档类型测试</title>
+</head>
+
+<body>
+
+    <div class="haha">
+        <img src="" alt="haha" title="haha">
+    </div>
+    <script>
+        console.log(document.documentElement) // 获取整个文档架构
+        console.log(document.head) // 获取头部信息
+        console.log(document.title) // 获取标题信息
+        console.log(document.body) // 获取身体信息
+
+        // 属性的获取和设置
+        let div = document.querySelector('div')
+        let img = document.querySelector('img')
+
+        console.log(div.getAttribute('class')) // 获取属性名
+        console.log(img.getAttribute('title'))
+
+        div.setAttribute('class', 'xixi') // 设置属性名
+        img.setAttribute('alt', '嘻嘻')
+
+        console.log(div.getAttribute('class')) // 再次获取属性名
+        console.log(img.getAttribute('title'))
+
+        img.removeAttribute('alt') // 移除(禁用)属性
+
+        img.setAttribute('size', '420×240') // 自定义属性
+    </script>
+</body>
+
+</html>

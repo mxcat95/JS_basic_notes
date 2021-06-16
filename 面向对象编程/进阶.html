@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <script src="../js封装/深拷贝.js"></script>
+    <title>面对对象进阶</title>
+</head>
+
+<body>
+
+    <script>
+        /* 原型模式 */
+        // 每个函数都有prototype(原型)属性 是一个指针 指向一个对象
+        // 用途：包含供所有实例使用的共有属性和方法
+        // 优点：构造函数创建的原型对象 可以让所有实例使用共有属性和方法
+
+        function Person(name, age) {
+            this.name = name
+            this.age = age
+        }
+
+        // 已经存在的实例无法使用后续新增的原型方法
+        let moBao = new Person('墨宝', 15)
+
+        // // 可被共享的属性
+        // Person.prototype.company = '潭州教育'
+        // // 可被共享的方法
+        // Person.prototype.sayName = function () {
+        //     console.log(this.name)
+        // }
+
+        // 为了便于书写和封装 改写为下面这种方式 缺点：constructor 函数会消失 指针不再指向person 而是Object对象
+        // 可以自定义constructor属性 并设置数据特性为不可枚举
+        Person.prototype = {
+            constructor: Person,
+            company: '潭州教育',
+            girlFriend: ['新恒结衣', '石原里美'],
+            sayName: function () {
+                console.log(this.name)
+            }
+        }
+        // 设置数据特性为不可枚举
+        Object.defineProperty(Person.prototype, 'constructor', {
+            enumerable: false,
+            value: Person
+        })
+        let wanZhang = new Person('万章', 30)
+        let yinShi = new Person('银时', 30)
+        console.log(Person.prototype.isPrototypeOf(wanZhang)) // 检测实例对象是否指向对象原型
+        console.log(Object.getPrototypeOf(wanZhang)) // 获取原型
+
+        /* 原型链 */
+        // 查找实例对象本身属性 -- 找不到 --> 查找原型对象中是否存在
+
+        // 原型覆盖问题 实例本身新增一个与原型属性同名的属性，不会覆盖原型，只会屏蔽当前实例的原型属性 不影响其他实例
+        // 如果某个实例通过__proto__方法去更改了原型属性，则会影响所有实例
+
+        /* 原生对象 */
+        // 修改原生对象(不推荐，会导致命名冲突)
+        Object.prototype.sayName = function () {
+            console.log('我爱莫惠子！')
+        }
+        let o = {}
+        let arr = []
+
+        function fn() {}
+        // 凡是继承于Object对象的对象(对象、数组、函数)都会去继承sayName方法
+
+        let newWanZhang = deepClone(wanZhang.girlFriend)
+    </script>
+</body>
+
+</html>

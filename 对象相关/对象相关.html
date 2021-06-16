@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>对象相关</title>
+</head>
+
+<body>
+
+    <button id="btn">点击</button>
+    <script>
+        /* 
+            对象：属性的无序集合
+                格式：
+                    {
+                        属性名1：属性值1,  // 属性名是字符串
+                        属性名2：属性值2
+                    }
+                种类：
+                    内置对象：
+                        由ECMAscript规范定义的对象或类；数组、函数、日期、正则等
+                    宿主对象：
+                        由JavaScript解释器所嵌入的宿主环境；window，document等
+                    自定义对象：
+                        由运行中的JavaScript代码所创建的对象
+                创建方式：
+                    属性值：属性名，由花括号括起来
+                    也可通过new创建一个空对象，也叫实例化一个对象
+                查询方式：
+                    通过点或者中括号查询：
+                        对象名.属性名
+                        对象名['属性名']：也可以是能转化为字符串的表达式
+                            例如：对象['ab' + 1] <==> 对象['ab1']
+                属性设置方式：
+                    如何查询就如何设置，将所查询的属性通过'='赋值
+                查询错误：
+                    查询一个对象的不存在的属性：undefined
+                    查询一个不存在的对象的属性：报错
+                常用操作：
+                    属性删除：delete {}['属性名'] / {}.属性名 返回一个布尔值
+                        注意：delete只是断开属性和宿主的联系，并不会去操作内存中属性值的存在与否
+                        (此处涉及到引用数据类型的深拷贝问题)
+                    属性检测：
+                        '属性名' in {} 返回布尔值
+                        {}.hasOwnPreperty('属性名') 返回布尔值
+                        {}.propertyIsEnumerable('属性名') 返回布尔值
+                    属性特征：
+                        属性特性服务的对象是JavaScript解析引擎，是引擎的内部值，程序员无法直接获取
+                        分类：
+                            数据属性：包含一个属性的位置，可以读取和写入值
+                                四个特性：
+                                    [[Configurable]]: 是否使能属性配置
+                                    [[Enumerable]]: 是否使能属性枚举(for in循环)
+                                    [[Writable]]: 是否使能属性修改权限
+                                    [[Value]]: 读写属性值，默认为undefined
+                                        内部值：[[内部特性]]
+                                    获取对象属性的特性：
+                                        Object.getOwnPropertyDescriptor({},'属性名')
+                                        获取自有特性的描述符，继承属性需要遍历原型链
+                                    设置对象属性的特性：
+                                        Object.defineProperty(o, 'x', {特性：是否使能})
+                                访问器属性：
+                                    访问器属性：不包含数据值
+                                        getter：读取访问器属性
+                                        setter：写入访问器属性
+                                        四个特性：
+                                            [[Configurable]]: 是否使能属性配置
+                                            [[Enumerable]]: 是否使能属性枚举(for in循环)
+                                            [[Get]]: 读取属性时调用，默认undefined
+                                            [[Set]]: 写入属性时调用，默认undefined
+                                        访问属性器不能直接定义，必须使用Object.defineProperty()定义
+                                对象的方法：
+                                    属性值可以使任意类型，但如果是函数，则成为对象的方法
+                                    {
+                                        method：function () {}
+                                    }
+                                        this指向：
+                                            在全局函数中：this指向window
+                                            在对象方法中：this指向当前对象
+                                            匿名函数：this指向window
+                                            其他代码中：指向其运行环境
+         */
+
+        let o = {
+            x: 1,
+            y: 2,
+            z: 3,
+            // 对象方法的this
+            f: function () {
+                console.log(this);
+            }
+        }
+        console.log((o.propertyIsEnumerable('x')))
+        for (p in o) {
+            if (Object.hasOwnProperty.call(o, p)) {
+                const element = o[p];
+                console.log(p);
+                console.log(element);
+            }
+        }
+        console.log(Object.getOwnPropertyDescriptor(o, 'x'));
+        Object.defineProperty(o, 'x', {
+            writable: false
+        })
+        o.x = 10
+        console.log(o.x);
+
+        // 全局方法的this
+        function fn() {
+            console.log(this);
+        }
+
+        // 匿名方法的this
+        ;
+        (function () {
+            console.log(this);
+        })()
+
+        /* getter 和 setter */
+        let book = {
+            _year: 2020, // _属性名：表示对象的私有属性，类似于java的private修饰符
+            version: 1.0
+        }
+        console.log(book);
+
+        Object.defineProperty(book, 'year', {
+            get: function () {
+                return this._year
+            },
+            set: function (newValue) {
+                if (newValue > 2020) {
+                    this._year = newValue
+                    this.version += (newValue - 2020)
+                }
+            }
+        })
+
+        // 如果不定义访问器，则下面代码只会新增一个year属性，无法修改_year私有属性
+        book.year = 2024
+        console.log(book);
+    </script>
+</body>
+
+</html>

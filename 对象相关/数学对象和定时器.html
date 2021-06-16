@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>数学对象和定时器</title>
+</head>
+<body>
+
+<script>
+
+    /* 数学对象常用方法 */
+    console.log(Math)
+    // 最值比较
+    console.log(Math.max(1,2,3,4,5)) // 最大值
+    console.log(Math.min(1,2,3,4,5)) // 最小值
+
+    // 取整
+    console.log(Math.ceil(26.1)) // 向上取整
+    console.log(Math.floor(26.9)) // 向下取整
+    console.log(Math.round(26.5)) // 四舍五入
+
+    // 随机数
+    console.log(Math.random()) // 返回一个0~1之间的随机数
+    // 实现1~100之间的随机整数
+    function random(min,max) {
+        return Math.round(Math.random()*(max-min)+min)
+    }
+    console.log(random(1,100))
+
+    /* 定时器 */
+    let a = 0
+    // 每隔一秒执行一次
+    let timer = setInterval(()=>{
+        console.log(a++)
+    },1000)
+
+    // 五秒之后清除定时器
+    setTimeout(()=>{
+        clearInterval(timer)
+    },5000)
+</script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <script src="../js封装/深拷贝.js"></script>
+    <title>数组迭代和归并</title>
+</head>
+
+<body>
+
+    <script>
+        /* 数组迭代方法 */
+        // every and some
+        let arr = [1, 2, 3, 4, 5, 4, 3, 2, 1]
+        let everyR = arr.every((item, index, array) => {
+            return (item > 2)
+            // 每一项都满足条件才能返回true
+        })
+        let someR = arr.some((item, index, array) => {
+            return (item > 2)
+            // 只要有一项满足条件就返回true
+        })
+        console.log(everyR)
+        console.log(someR)
+
+        // filter 过滤器
+        let filterR = arr.filter((item, index, array) => {
+            return (item > 2)
+            // 返回一个新数组 数组元素为满足条件的所有元素
+        })
+        console.log(filterR)
+
+        // map 映射表
+        let mapR = arr.map((item, index, array) => {
+            return item * item
+            // 返回一个数组，与原数组中的每一项形成映射关系
+        })
+        console.log(mapR)
+
+        let brr = arr
+        // forEach 遍历每一项 会改变原数组
+        brr.forEach((item, index, array) => {
+            array[index] += 10
+        })
+        console.log(arr, brr) // 引用数据类型的拷贝是浅拷贝 只拷贝了栈内存里的一个引用而已 还是指向堆内存的同一个对象
+        // 我们对引用数据类型需要进行深拷贝处理 递归方法处理
+        let crr = deepClone(arr)
+        crr.forEach((item, index, array) => {
+            array[index] += 10
+        })
+        console.log(arr, brr, crr)
+
+        /* 归并方法 */
+        // reduce 和 reduceRight
+        let number = [1, 2, 3, 4, 5]
+        let sum = number.reduce((pre, cur, index, array) => {
+            return pre + cur
+        }, 0)
+        console.log(sum)
+        let sumR = number.reduceRight((pre, cur, index, array) => {
+            return pre + cur
+        }, 6)
+        console.log(sumR)
+    </script>
+</body>
+
+</html>

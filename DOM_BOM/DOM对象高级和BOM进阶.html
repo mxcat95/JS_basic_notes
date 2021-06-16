@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>DOM对象高级和BOM进阶</title>
+    <style>
+        body{
+            margin: 0;
+        }
+        #text{
+            position: relative;
+            overflow: auto;
+            float: right;
+            width: 400px;
+            height: 500px;
+            margin-right: 300px;
+            font-size: 30px;
+            text-align: center;
+            border: 2px solid purple;
+        }
+        .son{
+            width: 100px;
+            height: 100px;
+            margin: 60px auto;
+            background-color: darkcyan;
+        }
+    </style>
+</head>
+<body>
+<img src="./images/1.jpg" alt="" data-bigsrc="./images/2.jpg" data-size="600*400">
+<div id="text">
+    啥也没有！
+    啥也没有！
+    <div class="son"></div>
+</div>
+
+<script>
+    /* 自定义数据属性 */
+    let img = document.querySelector('img')
+    let text = document.querySelector('#text')
+    let son = document.querySelector('.son')
+    let data = img.dataset // 自定义属性
+    window.onload = function() {
+        img.src = data.bigsrc
+    }
+
+    /* 元素尺寸和位置 */
+    console.log(text.offsetLeft)    // 相对于浏览器的左偏移量
+    console.log(text.offsetTop)     // 相对于浏览器的上偏移量
+    console.log(text.offsetWidth)   // 外边框宽度
+    console.log(text.offsetHeight)  // 外边框高度
+
+    console.log(son.offsetLeft)
+    console.log(son.offsetTop)
+    console.log(son.offsetWidth)
+    console.log(son.offsetHeight)
+
+    // 终极方案
+    console.log(text.getBoundingClientRect())
+
+    /* BOM事件 */
+    son.onclick = (e)=>{
+        console.log(e)
+    }
+</script>
+</body>
+</html>

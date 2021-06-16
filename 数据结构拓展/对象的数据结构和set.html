@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>对象数据结构和Set数据结构</title>
+</head>
+
+<body>
+    <script>
+        /* 对象数据结构 */
+        // ES6允许在对象内直接写变量和函数作为对象的属性和方法
+        function f(x, y) {
+            return {
+                x,
+                y
+            }
+            // 等价于
+            // return {
+            //     x: x,
+            //     y: y
+            // }
+        }
+
+        f(1, 2)
+
+        // ES6允许使用标识符和表达式定义属性名
+
+        let o = {
+            name: '张三',
+            ['a' + 'ge']: 18,
+            ['say' + 'name']() {
+                return this.name
+            }
+        }
+        console.log(o['age']) // 18
+
+        console.log(Object.getOwnPropertyDescriptor(o, 'age')) // 可枚举属性
+
+        let height = Symbol("身高")
+        height = 158
+        /* 对象的遍历 */
+        let moBao = {
+            height,
+            sex: '女',
+            age: 16,
+            eat(str) {
+                console.log(str)
+            }
+        }
+
+        for (let i in moBao) {
+            console.log(moBao[i])
+        }
+        console.log(Object.keys(moBao))
+        console.log(Object.getOwnPropertyNames(moBao))
+        console.log(Object.getOwnPropertySymbols(moBao))
+        console.log(Reflect.ownKeys(moBao))
+
+        /* 扩展运算符 */
+
+        let {
+            x,
+            y,
+            ...z
+        } = {
+            x: 1,
+            y: 2,
+            a: 3,
+            b: 4
+        }
+        console.log(x, y, z) // 1 2 {a: 3, b: 4}
+        // 还可用于对象的复制
+
+        let n = {
+            ...moBao
+        }
+
+        n.age = 15
+        console.log(n) // 非深拷贝 只能拷贝单层对象 嵌套不行
+
+        let arr = [1, 2, 3, 4, 5]
+        let brr = [9, 8, 7, ...arr]
+        console.log(brr)
+
+        /* Set数据结构 */
+        // 本身就是一个构造函数 用于生成set数据结构
+        let crr = [1, 2, 3, 4, 5, 4, 3, 2, 1]
+        const s = new Set()
+        crr.forEach(x => s.add(x))
+
+        console.log(s) // 只会添加不重复的值
+
+        // 去除重复数组项 或 字符串重复项
+        const items = [...new Set(crr)]
+        const strs = [...new Set('ababbc')].join('')
+
+        /* Set实例的属性和方法
+         *  1.Set.prototype.constructor() 构造函数
+         *  2.Set.prototype.size() 成员总数
+         *  3.add(value) 添加某个值 返回Set结构本身
+         *  4.delete(value) 删除某个值 返回布尔值
+         *  5.has(value) 检测是否为Set的成员
+         *  6.clear() 清除所有成员 没有返回值
+         * */
+
+        // 可用Array.from方法将Set结构转化为数组
+        console.log(Array.from(s))
+
+        /* 遍历方法
+         *  keys() 键名
+         *  values() 键值
+         *  entries() 键值对
+         *  forEach() 使用回调函数遍历
+         */
+        let set = new Set(['red', 'green', 'blue', 'purple']);
+
+        for (let item of set.keys()) {
+            console.log(item)
+        }
+        // 等同于下面的写法 与values()方法一致 因为Set结构没有键名 只有键值 或者说键名与键值相同
+        for (let item of set) {
+            console.log(item)
+        }
+        // 将每一项重复两次 拆成一个数组
+        for (let item of set.entries()) {
+            console.log(item)
+        }
+
+        set.forEach((value, key) => console.log(key + ': ' + value))
+
+        /* Set的遍历顺序就是插入顺序 使用Set保存一个回调函数列表 调用时能保证按照添加顺序调用 */
+
+        /**
+         * 常见用法
+         */
+
+        // 去除重复成员
+        let drr = [3, 5, 6, 3, 4, 5, 6, 8]
+        console.log([...new Set(drr)].sort())
+
+        // 间接调用数组方法 先转化为数组 调用完再转化为Set结构
+        let set1 = new Set([1, 2, 3])
+        set1 = new Set([...set1].map(x => x ** 2))
+        console.log(set1)
+
+        let set2 = new Set([1, 2, 3, 4, 5, 8, 9])
+        set2 = new Set([...set2].filter(x => (x % 2) === 0))
+        console.log(set2)
+
+        // 实现并集、交集、差集
+        let a = new Set([1, 2, 3])
+        let b = new Set([1, 4, 3, 2, 5])
+        // 并集
+        let union = new Set([...a, ...b])
+        // 交集
+        let intersect = new Set([...b].filter(x => a.has(x)).sort())
+        // 差集
+        let difference = new Set([...b].filter(x => !a.has(x)).sort())
+
+        /* Set遍历操作的常见应用 */
+        // 同步改变Set结构 目前没有直接方法 但有两种变通法
+
+        // 方法一
+        let f1 = new Set([1, 2, 3])
+        f1 = new Set([...f1].map(x => x * 2))
+
+        // 方法二
+        let f2 = new Set([4, 5, 6])
+        f2 = new Set(Array.from(f2, x => x * 2))
+
+        /* Set结构的弱版 WeakSet
+         *   两个区别：
+         *       1.成员只能是对象
+         *       2.对象都是弱引用 即垃圾回收机制不考虑在WeakSet中的对象
+         *   三个方法：与Set一样的用法
+         *       1.add
+         *       2.delete
+         *       3.has
+         *   注意点：
+         *       该数据结构不能遍历 因为是弱引用 无法保证成员的存在
+         *   用处：可以储存DOM节点 而不用担心这些节点从文档移除时引发内存泄漏
+         * */
+
+        const c = [
+            [1, 2],
+            [3, 4]
+        ]
+        const ws = new WeakSet(c)
+        // console.log(new WeakSet([1,2])) // 类型错误
+    </script>
+</body>
+
+</html>

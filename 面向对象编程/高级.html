@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>高级</title>
+</head>
+
+<body>
+
+    <ul>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+    </ul>
+    <script>
+        /* 经典继承(伪造对象) */
+        // 函数只不过是在特定环境中执行代码的对象
+
+        /* call 一个对象去调用另一个对象的方法 或者继承另一个对象的属性 */
+        let mo = {
+            name: '莫墨',
+            age: 15,
+            sayName: function () {
+                console.log(this.name)
+            },
+            add: function (x, y, z) {
+                console.log(this.age + x + y + z)
+            }
+
+        }
+
+        let mu = {
+            name: '木杉',
+            age: 25,
+            sayAge: function () {
+                console.log(this.age)
+            }
+        }
+
+        mo.sayName()
+        mu.sayAge()
+        // 对象mu想调用对象mo的sayName方法
+        mo.sayName.call(mu)
+        // 对象mo想调用mu的sayAge方法
+        mu.sayAge.call(mo)
+        mo.add.call(mu, 1, 2, 3)
+
+        /* call 经典应用 */
+        // 节点类数组功能非常少 可以使用call回调数组的方法
+        let ali = document.querySelectorAll('li')
+        // 方法一 通过原型链继承
+        // ali.prototype = Array.prototype
+        // 通过call
+        Array.prototype.forEach.call(ali, function (item, index, array) {
+            console.log(`第${index}个`)
+            console.log(item)
+        })
+
+        /* apply 所有方法的参数都放在一个数组里 */
+        mo.sayName.apply(mu)
+        mo.add.apply(mu, [1, 2, 3])
+
+        /* bind 创建一个新函数绑定某个对象或者属性或者方法 */
+        var name = '大帅比'
+        let ys = {
+            name: '银时'
+        }
+        let wz = {
+            name: '万章'
+        }
+
+        function sayName(m, n) {
+            console.log(this.name + m + n)
+        }
+
+        sayName(1, 2)
+        sayName.call(ys, 2, 2)
+        let newS = sayName.bind(wz, 2, 3)
+        newS()
+        // 对于绑定的初始化参数，永远都会存在
+        let newW = sayName.bind(ys, 5)
+        newW(6)
+        newW(88)
+
+        /* 伪造对象 使用call或者apply  类似于java中的super继承 在子类中使用超类去继承父类的属性和方法 */
+        function Father(h) {
+            this.height = h
+            this.color = ['red', 'yellow', 'black']
+        }
+
+        function Son(s) {
+            Father.call(this, '60m') // 可向父类传参 非常方便
+            this.size = s
+        }
+
+        Son.prototype.tip = function () {
+            console.log(this.size, this.color, this.height)
+        }
+        let c = new Son('100平')
+
+        /* 组合继承  原型链继承原型属性和方法，借调构造函数继承实例属性 */
+        function F(name) {
+            this.name = name
+            this.color = 'red'
+        }
+        F.prototype.sayName = function () {
+            console.log(this.name)
+        }
+
+        function S() {
+            F.call(this, '墨杉')
+            this.age = 18
+        }
+        S.prototype = new F('墨宝')
+        // 手动定义构造函数
+        S.prototype.constructor = S
+        S.prototype.sayAge = function () {
+            console.log(this.age)
+        }
+        let ss = new S()
+
+        /* 寄生组合式 */
+
+        // 复制原型副本
+        function object(o) {
+            function F() {}
+            F.prototype = o.prototype
+            return new F()
+        }
+        // 继承原型副本
+        function inheritPrototype(Son, Fa) {
+            var prototype = object(Fa) // 复制父类对象原型
+            prototype.constructor = Son // 增强对象
+            Son.prototype = prototype // 继承父类原型对象
+        }
+
+        // 以上两个函数本质上就是在进行一件事：将子类对象的原型指向父类对象的实例
+        // 即 Son.prototype = new Fa()
+
+        function Ff(name) {
+            this.name = name
+            this.color = 'black'
+        }
+        Ff.prototype.sayName = function () {
+            console.log(this.name)
+        }
+
+        function Ss(h) {
+            Ff.call(this, '墨杉')
+            this.height = h
+        }
+        inheritPrototype(Ss, Ff)
+
+        Ss.prototype.saySize = function () {
+            console.log(this.height)
+        }
+        let sa = new Ss(1.75)
+        /*
+         * 此模式高效，只调用了一次父类的构造函数，避免了在子类原型上建立重复的多余的方法，原型链也能保持不变
+         * 是目前公认的最理想的引用类型的继承方式
+         */
+    </script>
+</body>
+
+</html>

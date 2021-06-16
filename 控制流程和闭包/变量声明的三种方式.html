@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>变量生命的三中方式</title>
+</head>
+
+<body>
+    <button class="btn">按钮1</button>
+    <button class="btn">按钮2</button>
+    <button class="btn">按钮3</button>
+    <button class="btn">按钮4</button>
+    <button class="btn">按钮5</button>
+    <script>
+        /*
+        var let const的区别：
+            var:
+                用于声明变量，具有函数作用域，即内部变量可被外部访问到
+                缺陷：变量提升 将变量提升到作用域代码的最前面 重复的变量声明会被忽略,也就是会更新原来已经声明过的变量
+                函数声明也会被提前，具有函数优先级，优先级会被提升至最高，与其所在的位置无关
+            let:
+                具有块级作用域，内部变量仅在块内生效，无法被外部访问 重复的变量声明会报错 不会指令提升 存在临时死区
+            let是ES6更新的语法，比var更完美
+            const:
+                定义常量，本质上和let没有区别，唯一不同就是被声明的常量不允许被修改
+                通常使用大写来命名常量，便于和变量区分开
+            闭包原理：
+                标记清除：Mark and sweep
+                    垃圾收集器会标记所有内存中的变量，进入环境的标记为“进入环境”，离开环境的标记为“离开环境”
+                    回收器会回收所有未被环境使用的变量及其占用空间
+                引用计数：reference counting
+                    不常用的垃圾回收策略
+                闭包：
+                    一个函数可以返回另一个函数来保存其作用域...并可以用过返回的函数访问其作用域
+                    缺陷：会导致内存泄露，让可分配的内存空间资源减少
+                    作用：用于封装，私有化其属性
+    */
+        foo()
+        // console.log(a)
+        // var a = 10
+        // console.log(a)
+
+        // 输出undefined 将变量提升了 等价于:
+        var a
+        console.log(a)
+        a = 10
+        console.log(a)
+
+        function foo() {
+            console.log('我在上面执行！')
+        }
+        console.log(foo)
+        var foo = 10 // 将函数更新为一个新的值了
+        console.log(foo)
+
+        // var 和 let 的作用域
+
+        // for (var i = 0;i<5;i++){
+        //     console.log(i)
+        // }
+
+        // 在外部可以访问到循环内部的代码
+        // console.log(i)
+
+        for (let i = 0; i < 5; i++) {
+            console.log(i)
+        }
+        // 外部无法访问循环内部的变量 报错
+        // console.log(i)
+
+
+        /* 经典案例 */
+        // 循环绑定事件
+        var btns = document.querySelectorAll('.btn')
+
+        function varM() {
+            for (var i = 0; i < btns.length; i++) {
+                btns[i].onclick = () => {
+                    // 无论点击那个按钮 都会打印出5 因为var把i提升为全局变量了 所以翻车
+                    console.log(i)
+                }
+            }
+        }
+
+        function letM() {
+            for (let i = 0; i < btns.length; i++) {
+                btns[i].onclick = () => {
+                    // 点击不同按钮显示不同的值
+                    console.log(i)
+                }
+            }
+        }
+        letM()
+
+        /* 闭包问题 */
+        function foo1() {
+            var o = {
+                "name": "GinTama"
+            }
+            setTimeout(function () {
+                o.name = "我被改变了";
+            }, 3000)
+            return o;
+        }
+        var b = foo1();
+
+        /* 简单累加器 */
+        // 可以通过闭包来访问一个函数的作用域
+        function addf(n) {
+            let num = n
+            return function A() {
+                num++
+                return num
+            }
+        }
+        let bb = addf(1)
+        console.log(bb)
+        console.log(bb())
+
+        function bi() {
+            var arr = []
+            for (var i = 0; i < 10; i++) {
+                (j =>
+                    arr[j] = function () {
+                        console.log(j)
+                    })(i)
+            }
+            return arr
+        }
+        bi()
+    </script>
+</body>
+
+</html>

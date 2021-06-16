@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>DOM对象进阶</title>
+</head>
+
+<body>
+
+    <div class="box"></div>
+    <ul>
+        <li>墨宝好瘦！</li>
+        <li>啦啦啦</li>
+        <li>嘿嘿嘿</li>
+        <li>嘻嘻嘻</li>
+        <li>嘎嘎嘎</li>
+    </ul>
+    <script>
+        let box = document.querySelector('.box')
+        /* DOM进阶 */
+        let lis = document.querySelectorAll('li')
+        console.log(lis[0].childNodes); // 子节点
+        console.log(lis[0].parentNode); // 父节点
+        console.log(lis[2].nextSibling); // 下一个兄弟节点
+        console.log(lis[2].previousSibling); // 上一个兄弟节点
+
+
+        box.appendChild(document.createElement('p')) // 创建子节点
+        box.insertBefore(document.createElement('h2'), box.children[0]) // 新增子节点
+        box.children[0].innerHTML = '你好！'
+        box.children[1].innerHTML = 'p到此一游！'
+
+        box.replaceChild(document.createElement('span'), box.children[1]) // 替换子节点
+        box.children[1].innerHTML = 'span到此一游！'
+        console.log(box.children);
+        console.log(box.hasChildNodes());
+
+        /* DOM操作技术 */
+        // 元素遍历
+        // childElementCount： 返回子元素（ 不包括文本节点和注释） 的个数。
+        // firstElementChild： 指向第一个子元素； firstChild 的元素版。
+        // lastElementChild： 指向最后一个子元素； lastChild 的元素版。
+        // previousElementSibling： 指向前一个同辈元素； previousSibling 的元素版。
+        // nextElementSibling： 指向后一个同辈元素； nextSibling 的元素版。
+
+        // 删除
+        box.removeChild(box.children[1]) // 父级删除
+        console.log(box.children);
+        box.children[0].remove() // 儿子自删除
+        console.log(box.tagName) // 获取标签名
+        let list = box.classList // 获取类名 
+        list.add('box1') // 新增类名
+        list.toggle('box2') // 增删类名
+        list.remove('box1') // 删除类名
+        console.log(list.contains('box'));
+        console.log(box.classList);
+
+        /* 元素创造 */
+        // 如果需要创建多个元素，则使用元素片段更节省性能
+        box.appendChild(document.createElement('ul'))
+
+        let liArea = document.createDocumentFragment() // 创建一个元素片段区域
+
+        for (let i = 0; i < 10; i++) {
+            liArea.appendChild(document.createElement('li')) // 先把片段保存起来
+        }
+        box.children[0].appendChild(liArea)
+
+        let str = `
+                    <ul>
+                        <li>1</li>
+                        <li>2</li>
+                        <li>3</li>
+                        <li>4</li>
+                        <li>5</li>
+                        <li>6</li>
+                        <li>7</li>
+                        <li>8</li>
+                        <li>9</li>
+                        <li>10</li>
+                    </ul>
+                `
+        box.innerHTML += str
+    </script>
+</body>
+
+</html>

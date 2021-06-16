@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>日期对象</title>
+</head>
+
+<body>
+
+    <script>
+        /* 日期对象 */
+        // 创建对象
+        let date = new Date();
+        let date1 = new Date(2021, 1, 15, 16, 33, 50, 66)
+        let date2 = new Date('2021-2-15')
+        console.log(date)
+        console.log(date1)
+        console.log(date2)
+
+        // 计算
+        // let start = Date.now()
+        // setTimeout(()=>{
+        //     let stop = Date.now()
+        //     console.log(start,stop,stop-start)
+        // },3000)
+
+        /* 方法 */
+        // 格式化方法
+        console.log(date.toString()) // 返回星期 月 日 年
+        console.log(date.toTimeString()) // 返回时 分 秒 时区
+        console.log(date.toLocaleDateString()) // 返回年/月/日
+        console.log(date.toLocaleTimeString()) // 返回本地时 分 秒
+        console.log(date.toUTCString()) // 返回国际标准时间 比北京晚八小时
+        console.log(date.toLocaleString()) // 返回本地时间
+
+        // 日期方法
+        console.log(date.getTime()) // 返回到1970年1月1日零点的毫秒数
+        console.log(date.getDate()) // 日期
+        console.log(date.getFullYear()) // 年份
+        console.log(date.getMonth() + 1) // 月份
+        console.log(date.getDay()) // 星期
+        console.log(date.getHours()) // 时
+        console.log(date.getMinutes()) // 分
+        console.log(date.getSeconds()) // 秒
+        console.log(date.getTimezoneOffset()) // 时差
+
+        /* 字符串方法 */
+        let str = "臭宝很爱墨宝！"
+        let str2 = "很想她！"
+        console.log(str.length) // 长度
+        console.log(str[5]) // 下标访问
+        console.log(str.charAt(2)) // 下标访问
+        console.log(str.concat(str2)) // 字符串拼接
+        console.log(str.charCodeAt(2)) // 转换为Unicode码
+        console.log(String.fromCharCode(24456)) // Unicode码转换为字符串
+        console.log(str.indexOf('宝')) // 查询第一个匹配的字符 返回下标 没有就返回-1
+        console.log(str.lastIndexOf('宝')) // 查询倒数第一个匹配的字符 返回下标 没有就返回-1
+
+        // 切片 slice
+        console.log(str.slice(2, 6))
+
+        // 切割 split
+        console.log(str.split(""))
+
+        // 删除空格
+        let ctr = "  abcsefg   "
+        console.log(ctr.trim())
+
+        // 替换
+        console.log(ctr.replace('a', 'h')); // 把a替换成h
+    </script>
+</body>
+
+</html>

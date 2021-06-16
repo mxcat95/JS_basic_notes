@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOM_DOM终章</title>
+</head>
+
+<body>
+
+    <div class="wrap">
+        <div class="text"></div>
+    </div>
+
+    <input type="text" id="txt">
+    <a href="./数学对象和定时器.html" class="lip" target="_blank">你好数学</a>
+    <script>
+        let doms = {
+            wrap: document.querySelector('.wrap'),
+            text: document.querySelector('.text'),
+            body: document.querySelector('body'),
+            txt: document.querySelector('#txt'),
+            lip: document.querySelector('.lip')
+        }
+        /* DOM变动事件：删除节点事件 */
+
+        doms.body.addEventListener('DOMSubtreeModified', ev => {
+            console.log('DOM节点树更新');
+        })
+        doms.wrap.addEventListener('DOMNodeRemoved', ev => {
+            console.log('DOM节点被删除事件');
+        })
+        doms.wrap.addEventListener('DOMNodeRemovedFromDocument', ev => {
+            console.log('DOM节点从网页上被删除');
+        })
+        doms.text.addEventListener('DOMNodeRemovedFromDocument', ev => {
+            console.log('DOM节点被删除');
+        })
+        doms.text.remove()
+
+        // 文本事件
+        doms.txt.addEventListener('textInput', ev => {
+            console.log(ev.data);
+        })
+
+        // 阻止默认事件
+        doms.lip.addEventListener('click', e => {
+            e.preventDefault()
+            console.log('禁止跳转！');
+        })
+        document.addEventListener('contextmenu', e => {
+            e.preventDefault()
+            console.log('现在不能打开右键菜单');
+        })
+    </script>
+</body>
+
+</html>
