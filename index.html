@@ -27,6 +27,21 @@
                 所以需要使用Git做一些基本控制！
             </p><br>
             <!-- 产品经理是个大傻瓜！ -->
+            <p>
+                我突然发现我在注释里写了项目经理的坏话 忘删了
+                <br>
+                还不小心add了 完蛋了！
+            </p>
+            <br>
+            <p>
+                其实不用慌 可以通过git的相关指令还原到上次提交前的版本
+                <br>
+                当然 如果已经提交了 emmmm... 删库跑路吧！
+            </p>
+            <br>
+            <p>
+                通过git log日志信息 可以强制返回到任意想回到的提交版本
+            </p>
         </div>
     </main>
 
@@ -37,7 +52,10 @@
         <pre>   git add 文件名 // 添加单个文件 </pre>
         <pre>   git commit -m "描述信息" // 提交到本地仓库</pre>
         <pre>   git restore 文件名 // 还原到上次提交之前 </pre>
-        <pre>   git init // git 项目初始化 </pre>
+        <pre>   git log // 日志信息 获取版本号 </pre>
+        <pre>   git log 只能查看本次提交之前的版本 有局限性 </pre>
+        <pre>   git reset -- hard 版本号 // 还原到某个版本 </pre>
+        <pre>   git reflog // 比log更强大的日志记录 可用于版本反复横跳</pre>
     </nav>
 
 
