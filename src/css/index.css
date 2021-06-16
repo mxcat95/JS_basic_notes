@@ -68,8 +68,6 @@ button{
 nav{
     overflow: auto;
     position: absolute;
-    top: 160px;
-    left: 20px;
     width: 420px;
     height: 640px;
     color: yellow;
@@ -78,3 +76,12 @@ nav{
     background-color: rgb(46, 46, 54);
 }
 
+nav#left{
+    top: 160px;
+    left: 12px;
+}
+
+nav#right {
+    top: 160px;
+    right: 12px;
+}

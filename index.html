@@ -45,7 +45,24 @@
         </div>
     </main>
 
-    <nav>
+    <nav id="left">
+        <pre style="font-size: 20px;color: #fff;">           Git主线的基本操作</pre>
+        <pre>   git init // git 项目初始化 </pre>
+        <pre>   git status // 查看文件状态（保存或没保存） </pre>
+        <pre>   git add . // 添加所有文件 </pre>
+        <pre>   git add 文件名 // 添加单个文件 </pre>
+        <pre>   git commit -m "描述信息" // 提交到本地仓库</pre>
+        <pre>   git restore 文件名 // 还原到上次提交之前 </pre>
+        <pre>   git log // 日志信息 获取版本号 </pre>
+        <pre>   git log 只能查看本次提交之前的版本 有局限性 </pre>
+        <pre>   git reset -- hard 版本号 // 还原到某个版本 </pre>
+        <pre>   git reflog // 比log更强大的日志记录 可用于版本反复横跳</pre>
+        <pre>   git diff // 查看所有文件的修改记录</pre>
+        <pre>   ssh-keygen -t rsa -C "邮箱地址" // 加密秘钥</pre>
+    </nav>
+
+    <nav id="right">
+        <pre style="font-size: 20px;color: #fff;">           Git分支的基本操作</pre>
         <pre>   git init // git 项目初始化 </pre>
         <pre>   git status // 查看文件状态（保存或没保存） </pre>
         <pre>   git add . // 添加所有文件 </pre>
@@ -62,9 +79,8 @@
     <input type="number" name="add" id="in" placeholder="请输入一个数！">
     <br><button id="btn">倒序</button>
 
-    <p id="answer">这里是答案！</p>
+    <p id="answer">这里是结果！</p>
     <script src="./src/js/index.js"></script>
-
 </body>
 
 </html>
