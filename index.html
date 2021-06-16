@@ -77,16 +77,13 @@
 
     <nav id="right">
         <pre style="font-size: 20px;color: #fff;">           Git分支的基本操作</pre>
-        <pre>   git init // git 项目初始化 </pre>
-        <pre>   git status // 查看文件状态（保存或没保存） </pre>
-        <pre>   git add . // 添加所有文件 </pre>
-        <pre>   git add 文件名 // 添加单个文件 </pre>
-        <pre>   git commit -m "描述信息" // 提交到本地仓库</pre>
-        <pre>   git restore 文件名 // 还原到上次提交之前 </pre>
-        <pre>   git log // 日志信息 获取版本号 </pre>
-        <pre>   git log 只能查看本次提交之前的版本 有局限性 </pre>
-        <pre>   git reset -- hard 版本号 // 还原到某个版本 </pre>
-        <pre>   git reflog // 比log更强大的日志记录 可用于版本反复横跳</pre>
+        <pre>   git branch // 查看当前分支情况 </pre>
+        <pre>   git branch 分支名 // 新建一个分支 </pre>
+        <pre>   git checkout 分支名 // 切换分支 </pre>
+        <pre>   为什么要用新分支 假如我需要修改这些代码的bug</pre>
+        <pre>   但是担心直接在主分支里改崩了 那就放到bug分支里去改</pre>
+        <pre>   这样，就算改崩了也不影响主分支的代码</pre>
+        <pre>   而且各分支的提交记录也互不干扰！</pre>
     </nav>
 
 
@@ -95,6 +92,12 @@
 
     <p id="answer">这里是结果！</p>
     <script src="./src/js/index.js"></script>
+
+    <script>
+        // 在dev分支里写一个最熟悉的功能
+        // 写一行我们最拿手的代码
+        console.log('hello world!')
+    </script>
 </body>
 
 </html>
